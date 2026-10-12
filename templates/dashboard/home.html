@@ -1,0 +1,74 @@
+{% extends "dashboard/base.html" %}
+{% block title %}داشبورد{% endblock %}
+{% block heading %}داشبورد{% endblock %}
+{% block crumb %}{{ now|jdate:"long" }}{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:product_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} <span class="hide-sm">محصول جدید</span></a>{% endblock %}
+{% block content %}
+<div class="card welcome">
+  <h2>سلام {{ user.first_name|default:user.username }} 👋</h2>
+  <p style="opacity:.8;margin:6px 0 0">{% if pending_count %}<b>{{ pending_count|fa }}</b> پیش‌سفارش منتظر تایید پرداخت و <b>{{ to_ship|fa }}</b> سفارش آماده ارسال دارید.{% else %}همه پیش‌سفارش‌ها بررسی شده‌اند. روز خوبی داشته باشید!{% endif %}</p>
+  <div class="quick">
+    <a href="{% url 'dashboard:orders' %}?status=pending">{% icon 'clock' 16 %} پیش‌سفارش‌ها</a>
+    <a href="{% url 'dashboard:orders' %}?status=paid">{% icon 'box' 16 %} آماده‌سازی</a>
+    <a href="{% url 'dashboard:product_add' %}">{% icon 'plus' 16 %} افزودن محصول</a>
+    <a href="{% url 'dashboard:coupon_add' %}">{% icon 'percent' 16 %} کد تخفیف</a>
+    <a href="{% url 'dashboard:settings' %}">{% icon 'settings' 16 %} تنظیمات</a>
+  </div>
+</div>
+
+<div class="grid g-4 mt">
+  <a href="{% url 'dashboard:orders' %}?status=pending" class="card kpi c-warning"><span class="k-ic">{% icon 'clock' 22 %}</span><small>در انتظار تایید پرداخت</small><b data-count-to="{{ pending_count }}">۰</b><span class="k-sub">امروز {{ today_orders|fa }} سفارش جدید</span></a>
+  <a href="{% url 'dashboard:orders' %}?status=paid" class="card kpi c-purple"><span class="k-ic">{% icon 'box' 22 %}</span><small>منتظر آماده‌سازی / ارسال</small><b data-count-to="{{ to_ship }}">۰</b><span class="k-sub">پرداخت تاییدشده</span></a>
+  <div class="card kpi c-success"><span class="k-ic">{% icon 'card' 22 %}</span><small>فروش این ماه (تومان)</small><b data-count-to="{{ month_revenue }}">۰</b><span class="k-sub">کل: {{ total_revenue|price }}</span></div>
+  <a href="{% url 'dashboard:users' %}" class="card kpi c-info"><span class="k-ic">{% icon 'users' 22 %}</span><small>مشتریان</small><b data-count-to="{{ users_count }}">۰</b><span class="k-sub">{{ new_users|fa }} کاربر جدید در ۷ روز</span></a>
+</div>
+
+<div class="grid g-main mt">
+  <div class="card">
+    <div class="card-head"><h2>{% icon 'chart' 18 %} فروش ۱۴ روز اخیر</h2><span class="muted">جمع: <b>{{ chart_sum|price }}</b> تومان</span></div>
+    <div class="chart">
+      {% for c in chart %}<div class="col"><span class="tip">{{ c.label }}: {{ c.total|price }} ت ({{ c.n|fa }} سفارش)</span><div class="bar {% if not c.total %}zero{% endif %}" data-h="{{ c.pct }}"></div><span class="lbl">{{ c.label }}</span></div>{% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>{% icon 'box' 18 %} وضعیت سفارش‌ها</h2></div>
+    <div class="status-bars">
+      {% for k, label, c, pct in status_rows %}
+      <a href="{% url 'dashboard:orders' %}?status={{ k }}" class="sb-row"><span class="status-pill st-{{ k }}">{{ label|truncatechars:18 }}</span><span class="sb-track"><i class="st-{{ k }}" style="background:currentColor" data-w="{{ pct }}"></i></span><b>{{ c|fa }}</b></a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="grid g-main mt">
+  <div class="card">
+    <div class="card-head"><h2>{% icon 'clock' 18 %} آخرین سفارش‌ها</h2><a href="{% url 'dashboard:orders' %}" class="btn btn-sm btn-light">همه سفارش‌ها</a></div>
+    {% if recent_orders %}
+    <div class="table-wrap"><table class="tbl">
+      <thead><tr><th>کد</th><th>مشتری</th><th>مبلغ</th><th>وضعیت</th><th>تاریخ</th><th></th></tr></thead>
+      <tbody>{% for o in recent_orders %}
+        <tr><td><b class="ltr">{{ o.code }}</b></td><td>{{ o.full_name }}<br><small class="muted ltr">{{ o.phone }}</small></td><td>{{ o.total|price }}</td>
+          <td><span class="status-pill st-{{ o.status }}">{{ o.get_status_display|truncatechars:18 }}</span></td><td><small>{{ o.created_at|jdate:"datetime" }}</small></td>
+          <td><a class="act" href="{{ o.get_panel_url }}">{% icon 'eye' 16 %}</a></td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% else %}<div class="empty"><div class="e-ic">{% icon 'box' 30 %}</div>هنوز سفارشی ثبت نشده است.</div>{% endif %}
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>{% icon 'star' 18 %} پرفروش‌ها</h2></div>
+      {% if top_products %}<ul class="list-plain">{% for p in top_products %}<li><a href="{% url 'dashboard:product_edit' p.pk %}" class="prod-cell">{% if p.image %}<img class="thumb" style="width:38px;height:44px" src="{{ p.image.url }}" alt="">{% endif %}<span>{{ p.name|truncatechars:28 }}</span></a><span class="chip">{{ p.sold|fa }} فروش</span></li>{% endfor %}</ul>
+      {% else %}<p class="muted">هنوز فروشی ثبت نشده.</p>{% endif %}
+    </div>
+    <div class="card">
+      <div class="card-head"><h2 class="text-danger">{% icon 'x-circle' 18 %} موجودی رو به اتمام</h2><a href="{% url 'dashboard:products' %}?state=low" class="btn btn-sm btn-light">همه</a></div>
+      {% if low_variants or low_products %}
+      <ul class="list-plain">
+        {% for v in low_variants %}<li><a href="{% url 'dashboard:product_edit' v.product_id %}">{{ v.product.name|truncatechars:22 }} <small class="muted">{{ v.label }}</small></a><span class="chip {% if v.stock == 0 %}off{% else %}warn{% endif %}">{{ v.stock|fa }}</span></li>{% endfor %}
+        {% for p in low_products %}<li><a href="{% url 'dashboard:product_edit' p.pk %}">{{ p.name|truncatechars:28 }}</a><span class="chip {% if p.stock == 0 %}off{% else %}warn{% endif %}">{{ p.stock|fa }}</span></li>{% endfor %}
+      </ul>
+      {% else %}<p class="muted">همه محصولات موجودی کافی دارند ✓</p>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

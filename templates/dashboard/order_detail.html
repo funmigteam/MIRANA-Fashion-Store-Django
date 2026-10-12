@@ -1,0 +1,136 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}سفارش {{ order.code }}{% endblock %}
+{% block heading %}سفارش <span class="ltr">{{ order.code }}</span>{% endblock %}
+{% block crumb %}<a href="{% url 'dashboard:orders' %}">سفارش‌ها</a> / جزئیات{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:order_invoice' order.code %}" target="_blank" class="btn btn-light">{% icon 'external' 15 %} <span class="hide-sm">فاکتور / برچسب پستی</span></a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="order-hero">
+    <div>
+      <h2>{{ order.full_name }} <span class="status-pill st-{{ order.status }}" style="vertical-align:middle">{{ order.get_status_display }}</span></h2>
+      <span class="muted">ثبت: {{ order.created_at|jdate:"long" }}{% if order.user %} · کاربر: <a href="{% url 'dashboard:user_edit' order.user.pk %}" class="ltr">{{ order.user.username }}</a>{% endif %}</span>
+    </div>
+    <div style="text-align:left"><small class="muted">مبلغ قابل پرداخت</small><div style="font-size:24px;font-weight:900">{{ order.total|price }} <small class="muted" style="font-size:13px">تومان</small></div></div>
+  </div>
+  {% if order.status != 'cancelled' %}
+  <div class="steps">
+    {% for s in order.FLOW %}<div class="{% if forloop.counter0 < order.step %}done{% elif forloop.counter0 == order.step %}current{% endif %}">{% cycle 'پیش‌سفارش' 'تایید پرداخت' 'آماده‌سازی' 'ارسال' 'تحویل' %}</div>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="grid g-main mt">
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>{% icon 'box' 18 %} اقلام سفارش</h2></div>
+      <div class="table-wrap"><table class="tbl" style="min-width:520px">
+        <thead><tr><th>محصول</th><th>مشخصات</th><th>قیمت واحد</th><th>تعداد</th><th>جمع</th></tr></thead>
+        <tbody>{% for it in items %}
+          <tr><td><div class="prod-cell">{% if it.product and it.product.image %}<img class="thumb" src="{{ it.product.image.url }}" alt="">{% else %}<img class="thumb" src="{% static 'img/placeholder.svg' %}" alt="">{% endif %}
+            <div>{% if it.product %}<a href="{% url 'dashboard:product_edit' it.product.pk %}"><b>{{ it.product_name }}</b></a><small class="muted ltr">{{ it.product.sku }}</small>{% else %}<b>{{ it.product_name }}</b>{% endif %}</div></div></td>
+            <td>{{ it.variant_label|default:"—" }}</td><td>{{ it.unit_price|price }}</td><td><b>{{ it.quantity|fa }}</b></td><td><b>{{ it.total|price }}</b></td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+      <div class="info-list" style="max-width:340px;margin-inline-start:auto;margin-top:14px">
+        <div><span>جمع اقلام</span><b>{{ order.subtotal|price }}</b></div>
+        {% if order.discount %}<div><span>تخفیف {% if order.coupon %}(<span class="ltr">{{ order.coupon.code }}</span>){% endif %}</span><b class="text-success">− {{ order.discount|price }}</b></div>{% endif %}
+        <div><span>ارسال ({{ order.get_shipping_method_display }})</span><b>{% if order.shipping_cost %}{{ order.shipping_cost|price }}{% else %}رایگان{% endif %}</b></div>
+        <div><span><b>مبلغ کل</b></span><b style="font-size:16px">{{ order.total|price }} تومان</b></div>
+      </div>
+    </div>
+
+    <form method="post" class="card">{% csrf_token %}
+      <input type="hidden" name="action" value="edit">
+      <div class="card-head"><h2>{% icon 'edit' 18 %} اطلاعات ارسال و یادداشت‌ها</h2><button class="btn btn-sm" type="submit">ذخیره</button></div>
+      <div class="form-grid">{% for f in form %}{% include "partials/field.html" %}{% endfor %}</div>
+    </form>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="ship">
+      <div class="card-head"><h2>{% icon 'check' 18 %} تغییر وضعیت</h2></div>
+      <div class="action-grid">
+        {% if order.status == 'pending' %}
+        <form method="post" action="{% url 'dashboard:order_status' order.code %}" class="action-card primary">{% csrf_token %}
+          <input type="hidden" name="status" value="paid">
+          <b>مرحله بعد: تایید پرداخت</b>
+          <small class="muted">بعد از بررسی رسید در تلگرام / روبیکا، پرداخت را تایید کنید.</small>
+          <input class="input" name="note" placeholder="یادداشت (اختیاری) مثلاً: رسید تلگرام بررسی شد">
+          <button class="btn btn-success btn-block">{% icon 'check' 16 %} تایید پرداخت</button>
+        </form>
+        {% elif order.status == 'paid' %}
+        <form method="post" action="{% url 'dashboard:order_status' order.code %}" class="action-card primary">{% csrf_token %}
+          <input type="hidden" name="status" value="preparing">
+          <b>مرحله بعد: شروع آماده‌سازی</b>
+          <button class="btn btn-purple btn-block">{% icon 'box' 16 %} رفتن به آماده‌سازی</button>
+        </form>
+        {% endif %}
+        {% if order.status == 'paid' or order.status == 'preparing' %}
+        <form method="post" action="{% url 'dashboard:order_status' order.code %}" class="action-card {% if order.status == 'preparing' %}primary{% endif %}">{% csrf_token %}
+          <input type="hidden" name="status" value="shipped">
+          <b>ثبت ارسال و کد رهگیری</b>
+          <input class="input ltr" style="text-align:left" name="tracking_code" value="{{ order.tracking_code }}" placeholder="کد رهگیری پست" required>
+          <small class="muted">کد رهگیری به مشتری در صفحه سفارش نمایش داده می‌شود.</small>
+          <button class="btn btn-teal btn-block">{% icon 'truck' 16 %} ثبت ارسال</button>
+        </form>
+        {% endif %}
+        {% if order.status == 'shipped' %}
+        <form method="post" action="{% url 'dashboard:order_status' order.code %}" class="action-card primary">{% csrf_token %}
+          <input type="hidden" name="status" value="delivered">
+          <b>مرسوله تحویل مشتری شد؟</b>
+          <button class="btn btn-success btn-block">{% icon 'check' 16 %} ثبت تحویل</button>
+        </form>
+        {% endif %}
+        <details class="action-card">
+          <summary style="cursor:pointer;font-weight:700">تغییر دستی وضعیت</summary>
+          <form method="post" action="{% url 'dashboard:order_status' order.code %}" style="display:grid;gap:8px;margin-top:10px">{% csrf_token %}
+            <select class="input" name="status">{% for k, v in statuses %}<option value="{{ k }}" {% if k == order.status %}selected{% endif %}>{{ v }}</option>{% endfor %}</select>
+            <input class="input" name="note" placeholder="یادداشت (اختیاری)">
+            <button class="btn btn-light">اعمال</button>
+          </form>
+        </details>
+        {% if order.status != 'cancelled' and order.status != 'delivered' %}
+        <form method="post" action="{% url 'dashboard:order_status' order.code %}" data-confirm="سفارش لغو و موجودی به انبار برگردانده می‌شود.">{% csrf_token %}
+          <input type="hidden" name="status" value="cancelled">
+          <button class="btn btn-ghost btn-block text-danger">{% icon 'x-circle' 16 %} لغو سفارش</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if order.tracking_code %}
+    <div class="card"><div class="card-head"><h2>{% icon 'truck' 18 %} کد رهگیری</h2></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b class="ltr" style="font-size:18px">{{ order.tracking_code }}</b><button class="act" data-copy="{{ order.tracking_code }}">{% icon 'copy' 16 %}</button></div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-head"><h2>{% icon 'card' 18 %} رسید پرداخت</h2></div>
+      {% if order.receipt %}<img src="{{ order.receipt.url }}" class="receipt-img" data-lightbox alt="رسید">
+      {% else %}<p class="muted" style="margin:0">مشتری رسیدی در سایت آپلود نکرده است؛ رسید را در تلگرام / روبیکا بررسی کنید.</p>{% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>{% icon 'user' 18 %} گیرنده</h2><button class="act" data-copy="{{ order.full_name }} - {{ order.phone }} - {{ order.province }}، {{ order.city }}، {{ order.address }} - کد پستی: {{ order.postal_code }}" title="کپی آدرس">{% icon 'copy' 16 %}</button></div>
+      <div class="info-list">
+        <div><span>نام</span><b>{{ order.full_name }}</b></div>
+        <div><span>موبایل</span><a class="ltr" href="tel:{{ order.phone }}">{{ order.phone }}</a></div>
+        <div><span>استان / شهر</span><span>{{ order.province }} / {{ order.city }}</span></div>
+        <div><span>کد پستی</span><span class="ltr">{{ order.postal_code }}</span></div>
+      </div>
+      <p style="margin:10px 0 0;font-size:13px">{{ order.address }}</p>
+      {% if order.note %}<p class="muted" style="font-size:13px;margin:10px 0 0">📝 {{ order.note }}</p>{% endif %}
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h2>{% icon 'clock' 18 %} تاریخچه</h2></div>
+      <ul class="timeline">{% for l in logs %}<li><b>{{ l.get_status_display }}</b>{% if l.note %} — {{ l.note }}{% endif %}<br><small class="muted">{{ l.created_at|jdate:"datetime" }}{% if l.by %} · {{ l.by.get_full_name|default:l.by.username }}{% endif %}</small></li>{% endfor %}</ul>
+    </div>
+
+    <form method="post" action="{% url 'dashboard:order_delete' order.code %}" data-confirm="این سفارش برای همیشه حذف می‌شود.">{% csrf_token %}
+      <button class="btn btn-ghost btn-block text-danger">{% icon 'trash' 16 %} حذف کامل سفارش</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

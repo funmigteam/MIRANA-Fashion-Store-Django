@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% block title %}کدهای تخفیف{% endblock %}
+{% block heading %}کدهای تخفیف{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:coupon_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} کد جدید</a>{% endblock %}
+{% block content %}
+<div class="card">
+  {% if coupons %}
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>کد</th><th>تخفیف</th><th>حداقل خرید</th><th>استفاده</th><th>اعتبار</th><th>وضعیت</th><th></th></tr></thead>
+    <tbody>{% for c in coupons %}
+      <tr>
+        <td><b class="ltr">{{ c.code }}</b> <button class="act" style="display:inline-grid;width:28px;height:28px" data-copy="{{ c.code }}">{% icon 'copy' 13 %}</button></td>
+        <td>{% if c.percent %}{{ c.percent|fa }}٪{% endif %}{% if c.percent and c.amount %} + {% endif %}{% if c.amount %}{{ c.amount|price }} ت{% endif %}{% if c.max_discount %}<br><small class="muted">سقف {{ c.max_discount|price }}</small>{% endif %}</td>
+        <td>{{ c.min_total|price }}</td>
+        <td>{{ c.used|fa }}{% if c.usage_limit %} / {{ c.usage_limit|fa }}{% endif %}</td>
+        <td>{% if c.valid_until %}{{ c.valid_until|jdate }}{% if c.valid_until < now %} <span class="chip off">منقضی</span>{% endif %}{% else %}<span class="muted">نامحدود</span>{% endif %}</td>
+        <td>{% if c.is_active %}<span class="chip ok">فعال</span>{% else %}<span class="chip off">غیرفعال</span>{% endif %}</td>
+        <td><div class="actions"><a class="act" href="{% url 'dashboard:coupon_edit' c.pk %}">{% icon 'edit' 16 %}</a>
+          <form method="post" action="{% url 'dashboard:coupon_delete' c.pk %}" data-confirm="کد {{ c.code }} حذف می‌شود.">{% csrf_token %}<button class="act danger">{% icon 'trash' 16 %}</button></form></div></td>
+      </tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty"><div class="e-ic">{% icon 'percent' 30 %}</div>هنوز کد تخفیفی ساخته نشده.</div>{% endif %}
+</div>
+{% endblock %}

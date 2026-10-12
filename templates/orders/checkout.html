@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}ثبت پیش‌سفارش | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><a href="{% url 'shop:cart' %}"><span>سبد خرید</span></a><span>ثبت پیش‌سفارش</span></nav><h1>اطلاعات ارسال و ثبت پیش‌سفارش</h1></div>
+  <div class="cart-layout" style="margin-top:20px">
+    <div>
+      <form method="post" id="checkout-form" class="card reveal" data-once>
+        {% csrf_token %}
+        <div class="card-title">{% icon 'truck' %} مشخصات گیرنده</div>
+        {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        <div class="form-grid">
+          {% for f in form %}{% include "partials/field.html" %}{% endfor %}
+        </div>
+      </form>
+      <div class="pre-note reveal" style="margin-top:16px">{% icon 'shield' 20 %}<span>این سفارش به‌صورت <b>پیش‌سفارش</b> ثبت می‌شود و موجودی برای شما رزرو می‌گردد. در مرحله بعد شماره کارت و پیام آماده برای ارسال به ادمین (تلگرام / روبیکا) نمایش داده می‌شود. لطفاً حداکثر تا <b>{{ site.order_hold_hours|fa }} ساعت</b> پرداخت را انجام دهید.</span></div>
+    </div>
+
+    <aside class="summary reveal">
+      <div class="card">
+        <div class="card-title">{% icon 'box' %} خلاصه سفارش</div>
+        {% for it in items %}
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          {% if it.product.image %}<img class="mini-thumb" src="{{ it.product.image.url }}" alt="">{% else %}<img class="mini-thumb" src="{% static 'img/placeholder.svg' %}" alt="">{% endif %}
+          <div style="flex:1;font-size:13px"><b>{{ it.product.name }}</b>{% if it.variant %}<br><span class="muted">{{ it.variant.label }}</span>{% endif %}<br><span class="muted">{{ it.qty|fa }} × {{ it.unit_price|price }}</span></div>
+          <b style="font-size:13px">{{ it.total|price }}</b>
+        </div>
+        {% endfor %}
+        <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+        {% if coupon %}
+          <form method="post" class="pre-note" style="margin:0 0 12px;justify-content:space-between;align-items:center">{% csrf_token %}
+            <span>{% icon 'percent' 16 %} کد <b class="ltr">{{ coupon.code }}</b> اعمال شد</span>
+            <button class="remove-btn" name="action" value="remove_coupon">{% icon 'close' 14 %} حذف</button>
+          </form>
+        {% else %}
+          <form method="post" class="inline-form" style="margin-bottom:12px">{% csrf_token %}
+            <input class="input" name="coupon" placeholder="کد تخفیف" style="text-transform:uppercase">
+            <button class="btn btn-light" name="action" value="coupon">اعمال</button>
+          </form>
+        {% endif %}
+        <div class="summary-row"><span>جمع اقلام</span><span>{{ subtotal|price }} تومان</span></div>
+        {% if discount %}<div class="summary-row text-success"><span>تخفیف</span><span>− {{ discount|price }} تومان</span></div>{% endif %}
+        <div class="summary-row"><span>هزینه ارسال</span><span>{% if shipping %}{{ shipping|price }} تومان{% else %}<span class="text-success">رایگان</span>{% endif %}</span></div>
+        <div class="summary-row total"><span>مبلغ قابل پرداخت</span><span>{{ total|price }} تومان</span></div>
+        <button type="submit" form="checkout-form" class="btn btn-brand btn-lg btn-block" style="margin-top:14px">{% icon 'check' 18 %} ثبت پیش‌سفارش</button>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

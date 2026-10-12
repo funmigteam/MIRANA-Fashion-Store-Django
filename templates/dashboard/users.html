@@ -1,0 +1,31 @@
+{% extends "dashboard/base.html" %}
+{% block title %}کاربران{% endblock %}
+{% block heading %}کاربران{% endblock %}
+{% block crumb %}{{ page.paginator.count|fa }} کاربر{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:user_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} کاربر جدید</a>{% endblock %}
+{% block content %}
+<div class="tabs">
+  <a href="?" class="tab {% if not role %}active{% endif %}">همه</a>
+  <a href="?role=customer" class="tab {% if role == 'customer' %}active{% endif %}">مشتریان</a>
+  <a href="?role=staff" class="tab {% if role == 'staff' %}active{% endif %}">مدیران</a>
+  <a href="?role=inactive" class="tab {% if role == 'inactive' %}active{% endif %}">غیرفعال</a>
+</div>
+<div class="card">
+  <div class="card-head"><form class="filters" method="get" style="flex:1"><input type="hidden" name="role" value="{{ role|default:'' }}"><div class="search">{% icon 'search' 17 %}<input class="input" name="q" value="{{ q }}" placeholder="نام یا موبایل..."></div><button class="btn btn-light">جستجو</button></form></div>
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>کاربر</th><th>موبایل / نام کاربری</th><th>سفارش‌ها</th><th>مجموع خرید</th><th>عضویت</th><th>نقش</th><th></th></tr></thead>
+    <tbody>{% for u in page.object_list %}
+      <tr>
+        <td><b>{{ u.get_full_name|default:"—" }}</b></td>
+        <td class="ltr">{{ u.username }}</td>
+        <td>{{ u.n_orders|fa }}</td>
+        <td>{{ u.spent|default:0|price }}</td>
+        <td><small>{{ u.date_joined|jdate }}</small></td>
+        <td>{% if u.is_superuser %}<span class="chip warn">مدیر کل</span>{% elif u.is_staff %}<span class="chip ok">ادمین</span>{% else %}<span class="chip">مشتری</span>{% endif %}{% if not u.is_active %} <span class="chip off">غیرفعال</span>{% endif %}</td>
+        <td><div class="actions"><a class="act" href="{% url 'dashboard:user_edit' u.pk %}">{% icon 'edit' 16 %}</a>
+          {% if u != user and not u.is_superuser %}<form method="post" action="{% url 'dashboard:user_delete' u.pk %}" data-confirm="کاربر {{ u.username }} حذف می‌شود.">{% csrf_token %}<button class="act danger">{% icon 'trash' 16 %}</button></form>{% endif %}</div></td>
+      </tr>{% empty %}<tr><td colspan="7" class="muted" style="text-align:center">کاربری پیدا نشد.</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% include "dashboard/_pagination.html" %}
+</div>
+{% endblock %}

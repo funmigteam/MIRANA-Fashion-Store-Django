@@ -1,0 +1,12 @@
+{% if order.status == 'cancelled' %}
+  <div class="pre-note" style="background:#fbe9e8;color:#b23a32">{% icon 'x-circle' %} این سفارش لغو شده است.</div>
+{% else %}
+<div class="progress-steps" data-step="{{ order.step }}">
+  <span class="fill"></span>
+  <div class="pstep {% if order.step > 0 %}done{% elif order.step == 0 %}current{% endif %}"><i>{% icon 'clock' 18 %}</i>پیش‌سفارش</div>
+  <div class="pstep {% if order.step > 1 %}done{% elif order.step == 1 %}current{% endif %}"><i>{% icon 'card' 18 %}</i>تایید پرداخت</div>
+  <div class="pstep {% if order.step > 2 %}done{% elif order.step == 2 %}current{% endif %}"><i>{% icon 'box' 18 %}</i>آماده‌سازی</div>
+  <div class="pstep {% if order.step > 3 %}done{% elif order.step == 3 %}current{% endif %}"><i>{% icon 'truck' 18 %}</i>ارسال شد</div>
+  <div class="pstep {% if order.step >= 4 %}done{% endif %}"><i>{% icon 'check' 18 %}</i>تحویل</div>
+</div>
+{% endif %}

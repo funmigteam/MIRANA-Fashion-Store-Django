@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% block title %}اسلایدر{% endblock %}
+{% block heading %}اسلایدر صفحه اصلی{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:banner_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} اسلاید جدید</a>{% endblock %}
+{% block content %}
+{% if banners %}
+<div class="grid g-3">
+  {% for b in banners %}
+  <div class="card" style="padding:0;overflow:hidden">
+    <div style="aspect-ratio:16/8;background:var(--surface-2);display:grid;place-items:center;position:relative">
+      {% if b.image %}<img src="{{ b.image.url }}" style="width:100%;height:100%;object-fit:cover" alt="">{% else %}<span class="muted">{% icon 'image' 40 %}</span>{% endif %}
+      <span class="chip {% if b.is_active %}ok{% else %}off{% endif %}" style="position:absolute;top:10px;right:10px">{% if b.is_active %}فعال{% else %}غیرفعال{% endif %}</span>
+    </div>
+    <div style="padding:16px">
+      <b>{{ b.title }}</b><p class="muted" style="margin:4px 0 12px;font-size:13px">{{ b.subtitle|truncatechars:80 }}</p>
+      <div style="display:flex;justify-content:space-between;align-items:center"><small class="muted">ترتیب: {{ b.order|fa }} · {{ b.get_theme_display }}</small>
+        <div class="actions"><a class="act" href="{% url 'dashboard:banner_edit' b.pk %}">{% icon 'edit' 16 %}</a>
+        <form method="post" action="{% url 'dashboard:banner_delete' b.pk %}" data-confirm="اسلاید حذف می‌شود.">{% csrf_token %}<button class="act danger">{% icon 'trash' 16 %}</button></form></div></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}<div class="card empty"><div class="e-ic">{% icon 'image' 30 %}</div>اسلایدی وجود ندارد؛ صفحه اصلی یک اسلاید پیش‌فرض نشان می‌دهد.</div>{% endif %}
+{% endblock %}

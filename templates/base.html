@@ -1,0 +1,161 @@
+{% load static %}<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#faf7f2">
+  <meta name="description" content="{% block description %}{{ site.site_name }} | {{ site.slogan }}{% endblock %}">
+  <title>{% block title %}{{ site.site_name }} | {{ site.slogan }}{% endblock %}</title>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'fonts/Vazirmatn-Regular.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <script>document.documentElement.classList.add("js")</script>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <div class="page-loader" aria-hidden="true">
+    <div class="loader-logo"><span>M</span><span>I</span><span>R</span><span>A</span><span>N</span><span>A</span></div>
+  </div>
+
+  {% if site.announcement %}
+  <div class="announce">
+    <div class="announce-track">
+      {% for i in "1234" %}<span>{% icon 'truck' 15 %} {{ site.announcement }}</span><span>{% icon 'telegram' 15 %} پشتیبانی در تلگرام و روبیکا: <span class="ltr">@{{ site.telegram_id }}</span></span>{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <header class="header">
+    <div class="container header-inner">
+      <button class="icon-btn menu-toggle" data-drawer-open aria-label="منو">{% icon 'menu' 22 %}</button>
+      <a href="{% url 'core:home' %}" class="logo" aria-label="{{ site.site_name }}">
+        <span class="logo-mark">م</span>
+        <span class="logo-text"><b>{{ site.site_name }}</b><small>{{ site.site_name_en }}</small></span>
+      </a>
+      <nav class="nav" aria-label="منوی اصلی">
+        <div class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'core:home' %}">خانه</a></div>
+        {% for c in nav_categories|slice:":5" %}
+        <div class="nav-item">
+          <a class="nav-link" href="{{ c.get_absolute_url }}">{{ c.name }}{% if c.children.all %} {% icon 'chevron-down' 14 %}{% endif %}</a>
+          {% if c.children.all %}
+          <div class="dropdown">
+            <a href="{{ c.get_absolute_url }}"><b>همه {{ c.name }}</b></a>
+            {% for s in c.children.all %}{% if s.is_active %}<a href="{{ s.get_absolute_url }}">{{ s.name }}</a>{% endif %}{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        <div class="nav-item"><a class="nav-link" href="{% url 'shop:list' %}?sale=1">تخفیف‌ها</a></div>
+      </nav>
+      <div class="header-actions">
+        <form class="search-box" action="{% url 'shop:list' %}" role="search">
+          <input type="search" name="q" placeholder="جستجو در میرانا..." value="{{ q|default:'' }}" aria-label="جستجو">
+          <button type="submit" aria-label="جستجو">{% icon 'search' 18 %}</button>
+        </form>
+        {% if user.is_authenticated %}
+          <a href="{% url 'shop:wishlist' %}" class="icon-btn" aria-label="علاقه‌مندی‌ها">{% icon 'heart' 21 %}</a>
+          <a href="{% if user.is_staff %}{% url 'dashboard:home' %}{% else %}{% url 'accounts:profile' %}{% endif %}" class="icon-btn" aria-label="حساب کاربری" title="{{ user.get_full_name|default:user.username }}">{% icon 'user' 21 %}</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-light" style="margin-inline:4px">ورود | ثبت‌نام</a>
+        {% endif %}
+        <a href="{% url 'shop:cart' %}" class="icon-btn" data-cart-icon aria-label="سبد خرید">
+          {% icon 'cart' 22 %}<span class="badge" data-cart-count data-count="{{ cart_count }}">{{ cart_count|fa }}</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="drawer-backdrop"></div>
+  <aside class="drawer" aria-label="منوی موبایل">
+    <div class="drawer-head">
+      <a href="{% url 'core:home' %}" class="logo"><span class="logo-mark">م</span><span class="logo-text"><b>{{ site.site_name }}</b></span></a>
+      <button class="icon-btn" data-drawer-close aria-label="بستن">{% icon 'close' 22 %}</button>
+    </div>
+    <div class="drawer-body">
+      <form class="search-box" action="{% url 'shop:list' %}" role="search">
+        <input type="search" name="q" placeholder="جستجو...">
+        <button type="submit">{% icon 'search' 18 %}</button>
+      </form>
+      <a class="drawer-link" href="{% url 'core:home' %}">{% icon 'home' %} خانه</a>
+      <a class="drawer-link" href="{% url 'shop:list' %}">{% icon 'grid' %} همه محصولات</a>
+      {% for c in nav_categories %}
+        <a class="drawer-link" href="{{ c.get_absolute_url }}">{% icon 'tag' %} {{ c.name }}</a>
+        {% if c.children.all %}<div class="drawer-sub">{% for s in c.children.all %}{% if s.is_active %}<a href="{{ s.get_absolute_url }}">{{ s.name }}</a>{% endif %}{% endfor %}</div>{% endif %}
+      {% endfor %}
+      <a class="drawer-link" href="{% url 'shop:list' %}?sale=1">{% icon 'percent' %} تخفیف‌ها</a>
+      <a class="drawer-link" href="{% url 'orders:track' %}">{% icon 'truck' %} پیگیری سفارش</a>
+      {% if user.is_authenticated %}
+        <a class="drawer-link" href="{% url 'accounts:profile' %}">{% icon 'user' %} حساب کاربری</a>
+        <a class="drawer-link" href="{% url 'orders:list' %}">{% icon 'box' %} سفارش‌های من</a>
+        {% if user.is_staff %}<a class="drawer-link" href="{% url 'dashboard:home' %}">{% icon 'settings' %} پنل مدیریت</a>{% endif %}
+      {% else %}
+        <a class="drawer-link" href="{% url 'accounts:login' %}">{% icon 'user' %} ورود / ثبت‌نام</a>
+      {% endif %}
+      <a class="drawer-link" href="{% url 'core:how_to_buy' %}">{% icon 'chat' %} راهنمای خرید</a>
+      <a class="drawer-link" href="{% url 'core:contact' %}">{% icon 'phone' %} تماس با ما</a>
+    </div>
+    <div class="drawer-social">
+      {% if site.telegram_id %}<a class="btn btn-telegram btn-sm" href="{{ site.telegram_url }}" target="_blank" rel="noopener">{% icon 'telegram' 16 %} تلگرام</a>{% endif %}
+      {% if site.rubika_id %}<a class="btn btn-rubika btn-sm" href="{{ site.rubika_url }}" target="_blank" rel="noopener">{% icon 'rubika' 16 %} روبیکا</a>{% endif %}
+    </div>
+  </aside>
+
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="{% url 'core:home' %}" class="logo"><span class="logo-mark">م</span><span class="logo-text"><b>{{ site.site_name }}</b><small>{{ site.site_name_en }}</small></span></a>
+          <p style="margin-top:16px">{{ site.about|truncatechars:170 }}</p>
+          <div class="footer-social">
+            {% if site.telegram_channel %}<a href="{{ site.telegram_channel_url }}" target="_blank" rel="noopener">{% icon 'telegram' 16 %} کانال تلگرام</a>{% endif %}
+            {% if site.rubika_channel %}<a href="{{ site.rubika_channel_url }}" target="_blank" rel="noopener">{% icon 'rubika' 16 %} کانال روبیکا</a>{% endif %}
+            {% if site.instagram_id %}<a href="{{ site.instagram_url }}" target="_blank" rel="noopener">{% icon 'instagram' 16 %} اینستاگرام</a>{% endif %}
+          </div>
+        </div>
+        <div>
+          <h4>دسته‌بندی‌ها</h4>
+          <ul>{% for c in nav_categories %}<li><a href="{{ c.get_absolute_url }}">{{ c.name }}</a></li>{% endfor %}</ul>
+        </div>
+        <div>
+          <h4>راهنما</h4>
+          <ul>
+            <li><a href="{% url 'core:how_to_buy' %}">راهنمای خرید</a></li>
+            <li><a href="{% url 'orders:track' %}">پیگیری سفارش</a></li>
+            <li><a href="{% url 'core:faq' %}">سوالات متداول</a></li>
+            <li><a href="{% url 'core:about' %}">درباره میرانا</a></li>
+            <li><a href="{% url 'core:contact' %}">تماس با ما</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>ارتباط با ادمین</h4>
+          {% if site.telegram_id %}<div class="contact-line">{% icon 'telegram' 18 %}<div>تلگرام: <a href="{{ site.telegram_url }}" target="_blank" rel="noopener" class="ltr">@{{ site.telegram_id }}</a><br><small class="ltr" style="opacity:.6">{{ site.telegram_url }}</small></div></div>{% endif %}
+          {% if site.rubika_id %}<div class="contact-line">{% icon 'rubika' 18 %}<div>روبیکا: <a href="{{ site.rubika_url }}" target="_blank" rel="noopener" class="ltr">@{{ site.rubika_id }}</a><br><small class="ltr" style="opacity:.6">{{ site.rubika_url }}</small></div></div>{% endif %}
+          {% if site.phone %}<div class="contact-line">{% icon 'phone' 18 %}<span>{{ site.phone|fa }}</span></div>{% endif %}
+          {% if site.working_hours %}<div class="contact-line">{% icon 'clock' 18 %}<span>{{ site.working_hours }}</span></div>{% endif %}
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© {{ site.footer_text }}</span>
+        <span>{{ site.site_name_en }} — Made with care in Iran</span>
+      </div>
+    </div>
+  </footer>
+
+  <div class="fab">
+    <button class="fab-main" aria-label="پشتیبانی">{% icon 'plus' 26 %}</button>
+    {% if site.telegram_id %}<a class="fab-item tg" href="{{ site.telegram_url }}" target="_blank" rel="noopener" title="تلگرام ادمین">{% icon 'telegram' 22 %}</a>{% endif %}
+    {% if site.rubika_id %}<a class="fab-item rb" href="{{ site.rubika_url }}" target="_blank" rel="noopener" title="روبیکا ادمین">{% icon 'rubika' 22 %}</a>{% endif %}
+  </div>
+  <button class="to-top" aria-label="بازگشت به بالا">{% icon 'arrow-right' 20 %}</button>
+
+  <div class="toasts" aria-live="polite"></div>
+  {% for m in messages %}<span class="django-message" hidden data-type="{{ m.tags|default:'info' }}" data-text="{{ m }}"></span>{% endfor %}
+  {% csrf_token %}
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

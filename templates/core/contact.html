@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}تماس با ما | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>تماس با ما</span></nav><h1>تماس با ما</h1></div>
+  <div class="cart-layout" style="margin-top:20px">
+    <div class="card reveal">
+      <div class="card-title">{% icon 'mail' %} ارسال پیام</div>
+      <form method="post" data-once>{% csrf_token %}
+        <div class="form-grid">
+          {% for f in form %}{% include "partials/field.html" %}{% endfor %}
+        </div>
+        <button class="btn btn-brand" style="margin-top:18px" type="submit">ارسال پیام</button>
+      </form>
+    </div>
+    <div class="reveal">
+      <div class="social-cta" style="grid-template-columns:1fr">
+        {% if site.telegram_id %}<a class="social-card tg" href="{{ site.telegram_url }}" target="_blank" rel="noopener"><span class="sc-ic">{% icon 'telegram' 28 %}</span><div><b>تلگرام</b><small>@{{ site.telegram_id }}</small></div><span class="sc-arrow">{% icon 'arrow-left' 20 %}</span></a>{% endif %}
+        {% if site.rubika_id %}<a class="social-card rb" href="{{ site.rubika_url }}" target="_blank" rel="noopener"><span class="sc-ic">{% icon 'rubika' 28 %}</span><div><b>روبیکا</b><small>@{{ site.rubika_id }}</small></div><span class="sc-arrow">{% icon 'arrow-left' 20 %}</span></a>{% endif %}
+      </div>
+      <div class="card" style="margin-top:18px">
+        {% if site.phone %}<div class="contact-line">{% icon 'phone' %} {{ site.phone|fa }}</div>{% endif %}
+        {% if site.address %}<div class="contact-line">{% icon 'home' %} {{ site.address }}</div>{% endif %}
+        {% if site.working_hours %}<div class="contact-line">{% icon 'clock' %} {{ site.working_hours }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

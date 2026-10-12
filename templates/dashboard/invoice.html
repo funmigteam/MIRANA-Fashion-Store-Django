@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>فاکتور {{ order.code }}</title>
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<style>body{background:#fff;color:#1d1a17}.inv{max-width:800px;margin:30px auto;padding:30px;border:1px solid #ddd;border-radius:16px}.inv h1{font-size:22px}.row{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}.box{border:1.5px dashed #999;border-radius:12px;padding:16px;margin-top:20px}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{border:1px solid #ddd;padding:8px;text-align:right;font-size:13px}th{background:#f5f2ee}</style></head>
+<body>
+<div class="inv">
+  <div class="row"><div><h1>{{ site.site_name }} <small style="font-size:12px;letter-spacing:.2em">{{ site.site_name_en }}</small></h1><small>{{ site.slogan }}</small></div>
+    <div style="text-align:left">فاکتور سفارش <b class="ltr">{{ order.code }}</b><br><small>{{ order.created_at|jdate:"datetime" }}</small></div></div>
+  <table><thead><tr><th>#</th><th>محصول</th><th>مشخصات</th><th>تعداد</th><th>قیمت واحد</th><th>جمع (تومان)</th></tr></thead>
+    <tbody>{% for it in items %}<tr><td>{{ forloop.counter|fa }}</td><td>{{ it.product_name }}</td><td>{{ it.variant_label|default:"—" }}</td><td>{{ it.quantity|fa }}</td><td>{{ it.unit_price|price }}</td><td>{{ it.total|price }}</td></tr>{% endfor %}
+      <tr><td colspan="5">جمع اقلام</td><td>{{ order.subtotal|price }}</td></tr>
+      {% if order.discount %}<tr><td colspan="5">تخفیف</td><td>− {{ order.discount|price }}</td></tr>{% endif %}
+      <tr><td colspan="5">هزینه ارسال</td><td>{{ order.shipping_cost|price }}</td></tr>
+      <tr><th colspan="5">مبلغ کل</th><th>{{ order.total|price }}</th></tr></tbody></table>
+  <div class="box">
+    <b>گیرنده:</b> {{ order.full_name }} — <span class="ltr">{{ order.phone }}</span><br>
+    <b>آدرس:</b> {{ order.province }}، {{ order.city }}، {{ order.address }}<br>
+    <b>کد پستی:</b> <span class="ltr">{{ order.postal_code }}</span> · <b>روش ارسال:</b> {{ order.get_shipping_method_display }}{% if order.tracking_code %} · <b>رهگیری:</b> <span class="ltr">{{ order.tracking_code }}</span>{% endif %}
+  </div>
+  <div class="box"><b>فرستنده:</b> {{ site.site_name }} — {{ site.address }} — {{ site.phone|fa }}</div>
+  <p class="no-print" style="text-align:center;margin-top:20px"><button class="btn" onclick="window.print()">چاپ</button></p>
+</div>
+</body></html>

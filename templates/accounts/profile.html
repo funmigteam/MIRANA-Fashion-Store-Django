@@ -1,0 +1,30 @@
+{% extends "accounts/account_base.html" %}
+{% block title %}حساب کاربری | {{ site.site_name }}{% endblock %}
+{% block account %}
+<div class="stats-row reveal-stagger">
+  <div class="stat"><small>کل سفارش‌ها</small><b>{{ orders_count|fa }}</b></div>
+  <div class="stat"><small>سفارش‌های جاری</small><b>{{ orders_open|fa }}</b></div>
+  <div class="stat"><small>علاقه‌مندی‌ها</small><b>{{ wish_ids|length|fa }}</b></div>
+</div>
+{% if orders_recent %}
+<div class="card reveal">
+  <div class="card-title" style="justify-content:space-between">{% icon 'box' %} آخرین سفارش‌ها <a href="{% url 'orders:list' %}" class="link-arrow" style="margin-inline-start:auto">همه {% icon 'arrow-left' 14 %}</a></div>
+  <div class="order-list">
+    {% for o in orders_recent %}
+    <a href="{{ o.get_absolute_url }}" class="order-row" style="padding:14px 16px">
+      <div><b class="ltr">{{ o.code }}</b> <span class="status-pill st-{{ o.status }}">{{ o.get_status_display }}</span><br><small class="muted">{{ o.created_at|jdate }}</small>{% if o.tracking_code %} · <small class="text-success">رهگیری: <span class="ltr">{{ o.tracking_code }}</span></small>{% endif %}</div>
+      <b>{{ o.total|price }} <small class="muted">تومان</small></b>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+<form method="post" class="card reveal" data-once>{% csrf_token %}
+  <div class="card-title">{% icon 'user' %} اطلاعات شخصی و آدرس پیش‌فرض</div>
+  <div class="form-grid">
+    {% for f in uform %}{% include "partials/field.html" %}{% endfor %}
+    {% for f in pform %}{% include "partials/field.html" %}{% endfor %}
+  </div>
+  <button class="btn btn-brand" style="margin-top:18px" type="submit">ذخیره تغییرات</button>
+</form>
+{% endblock %}

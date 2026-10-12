@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}درباره ما | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>درباره ما</span></nav><h1>درباره {{ site.site_name }}</h1></div>
+  <div class="card reveal" style="margin-top:20px">
+    <div class="prose">
+      <p>{{ site.about|linebreaksbr }}</p>
+    </div>
+  </div>
+  <div class="big-steps reveal-stagger" style="margin-top:24px">
+    <div class="big-step"><span class="n">۱</span><span class="feature-ic">{% icon 'star' 24 %}</span><h3>طراحی اصیل</h3><p class="muted">هر قطعه با دقت و با نگاه به سبک زندگی امروز طراحی می‌شود.</p></div>
+    <div class="big-step"><span class="n">۲</span><span class="feature-ic">{% icon 'shield' 24 %}</span><h3>کیفیت پارچه</h3><p class="muted">انتخاب پارچه‌های باکیفیت و ماندگار، کنترل کیفیت قبل از ارسال.</p></div>
+    <div class="big-step"><span class="n">۳</span><span class="feature-ic">{% icon 'chat' 24 %}</span><h3>ارتباط نزدیک</h3><p class="muted">پاسخگویی واقعی در تلگرام و روبیکا، از مشاوره سایز تا پیگیری مرسوله.</p></div>
+  </div>
+</div>
+{% endblock %}

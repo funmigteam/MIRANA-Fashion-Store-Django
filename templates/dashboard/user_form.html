@@ -1,0 +1,28 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{% if obj.pk %}ویرایش کاربر{% else %}کاربر جدید{% endif %}{% endblock %}
+{% block heading %}{% if obj.pk %}کاربر: {{ obj.get_full_name|default:obj.username }}{% else %}کاربر جدید{% endif %}{% endblock %}
+{% block crumb %}<a href="{% url 'dashboard:users' %}">کاربران</a>{% endblock %}
+{% block content %}
+<div class="grid g-main">
+  <form method="post" class="card">{% csrf_token %}
+    <div class="card-head"><h2>{% icon 'user' 18 %} اطلاعات حساب</h2></div>
+    {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    <div class="form-grid">{% for f in form %}{% include "partials/field.html" %}{% endfor %}</div>
+    <div class="sticky-actions"><a href="{% url 'dashboard:users' %}" class="btn btn-light">انصراف</a><button class="btn btn-brand" type="submit">ذخیره</button></div>
+  </form>
+  {% if obj.pk %}
+  <div class="grid">
+    {% if profile %}
+    <div class="card"><div class="card-head"><h2>{% icon 'home' 18 %} آدرس پیش‌فرض</h2></div>
+      <div class="info-list"><div><span>موبایل</span><span class="ltr">{{ profile.phone|default:"—" }}</span></div><div><span>استان/شهر</span><span>{{ profile.province|default:"—" }} / {{ profile.city|default:"—" }}</span></div><div><span>کد پستی</span><span class="ltr">{{ profile.postal_code|default:"—" }}</span></div></div>
+      {% if profile.address %}<p style="font-size:13px;margin:10px 0 0">{{ profile.address }}</p>{% endif %}
+    </div>
+    {% endif %}
+    <div class="card"><div class="card-head"><h2>{% icon 'box' 18 %} سفارش‌های اخیر</h2></div>
+      {% if user_orders %}<ul class="list-plain">{% for o in user_orders %}<li><a href="{{ o.get_panel_url }}" class="ltr"><b>{{ o.code }}</b></a><span class="status-pill st-{{ o.status }}">{{ o.get_status_display|truncatechars:16 }}</span><span>{{ o.total|price }}</span></li>{% endfor %}</ul>
+      {% else %}<p class="muted">سفارشی ندارد.</p>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

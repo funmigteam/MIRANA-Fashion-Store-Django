@@ -1,0 +1,33 @@
+{% extends "accounts/account_base.html" %}
+{% load static %}
+{% block title %}سفارش‌های من | {{ site.site_name }}{% endblock %}
+{% block account %}
+<div class="card">
+  <div class="card-title">{% icon 'box' %} سفارش‌های من</div>
+  <div class="chips" style="margin-bottom:18px">
+    <a href="?" class="chip {% if not status %}active{% endif %}">همه</a>
+    {% for k, v in statuses %}<a href="?status={{ k }}" class="chip {% if status == k %}active{% endif %}">{{ v }}</a>{% endfor %}
+  </div>
+  {% if orders %}
+  <div class="order-list reveal-stagger">
+    {% for o in orders %}
+    <a href="{{ o.get_absolute_url }}" class="order-row">
+      <div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <b class="ltr">{{ o.code }}</b><span class="status-pill st-{{ o.status }}">{{ o.get_status_display }}</span>
+        </div>
+        <small class="muted">{{ o.created_at|jdate:"long" }} · {{ o.items_count|fa }} کالا</small>
+        <div class="thumbs">
+          {% for it in o.items.all|slice:":5" %}{% if it.product and it.product.image %}<img src="{{ it.product.image.url }}" alt="">{% else %}<span></span>{% endif %}{% endfor %}
+        </div>
+        {% if o.tracking_code %}<small class="text-success">{% icon 'truck' 14 %} کد رهگیری: <span class="ltr">{{ o.tracking_code }}</span></small>{% endif %}
+      </div>
+      <div style="text-align:left"><b>{{ o.total|price }}</b> <small class="muted">تومان</small><br><span class="link-arrow" style="font-size:13px">جزئیات {% icon 'arrow-left' 14 %}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty"><div class="empty-ic">{% icon 'box' 40 %}</div><h3>سفارشی پیدا نشد</h3><a href="{% url 'shop:list' %}" class="btn btn-brand">شروع خرید</a></div>
+  {% endif %}
+</div>
+{% endblock %}

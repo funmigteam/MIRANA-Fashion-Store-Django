@@ -1,0 +1,38 @@
+{% load static %}
+<article class="product-card">
+  <div class="pc-media">
+    <a href="{{ p.get_absolute_url }}" aria-label="{{ p.name }}">
+      {% if p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">{% else %}<img src="{% static 'img/placeholder.svg' %}" alt="{{ p.name }}" loading="lazy">{% endif %}
+      {% with p.images.all.0 as second %}{% if second %}<img class="img-2" src="{{ second.image.url }}" alt="" loading="lazy">{% endif %}{% endwith %}
+    </a>
+    <div class="pc-tags">
+      {% if not p.in_stock %}<span class="tag tag-out">ناموجود</span>
+      {% else %}
+        {% if p.discount_percent %}<span class="tag tag-sale">{{ p.discount_percent|fa }}٪ تخفیف</span>{% endif %}
+        {% if p.is_new %}<span class="tag tag-new">جدید</span>{% endif %}
+      {% endif %}
+    </div>
+    <button class="pc-wish {% if p.pk in wish_ids %}active{% endif %}" data-wish="{% url 'shop:wishlist_toggle' p.pk %}" {% if remove_on_unwish %}data-remove-card="1"{% endif %} aria-label="علاقه‌مندی">{% icon 'heart' 18 %}</button>
+    {% if p.in_stock %}
+    <div class="pc-quick">
+      {% if p.has_variants %}
+        <a href="{{ p.get_absolute_url }}" class="btn btn-sm btn-light">انتخاب سایز و رنگ</a>
+      {% else %}
+        <form method="post" action="{% url 'shop:cart_add' %}" data-ajax-cart>
+          {% csrf_token %}<input type="hidden" name="product" value="{{ p.pk }}"><input type="hidden" name="qty" value="1">
+          <button type="submit" class="btn btn-sm">{% icon 'cart' 16 %} افزودن به سبد</button>
+        </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="pc-body">
+    <span class="pc-cat">{{ p.category.name }}</span>
+    <a href="{{ p.get_absolute_url }}" class="pc-title">{{ p.name }}</a>
+    {% with p.colors as cols %}{% if cols %}<div class="pc-colors">{% for name, hex in cols|slice:":5" %}<i style="background:{{ hex }}" title="{{ name }}"></i>{% endfor %}</div>{% endif %}{% endwith %}
+    <div class="price">
+      <b>{{ p.final_price|price }}</b><small>تومان</small>
+      {% if p.discount_price %}<del>{{ p.price|price }}</del>{% endif %}
+    </div>
+  </div>
+</article>

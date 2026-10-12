@@ -1,0 +1,63 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}محصولات{% endblock %}
+{% block heading %}محصولات{% endblock %}
+{% block crumb %}{{ page.paginator.count|fa }} محصول{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:product_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} افزودن محصول</a>{% endblock %}
+{% block content %}
+<div class="tabs">
+  <a href="?" class="tab {% if not state %}active{% endif %}">همه</a>
+  <a href="?state=active" class="tab {% if state == 'active' %}active{% endif %}">فعال</a>
+  <a href="?state=hidden" class="tab {% if state == 'hidden' %}active{% endif %}">مخفی</a>
+  <a href="?state=sale" class="tab {% if state == 'sale' %}active{% endif %}">تخفیف‌دار</a>
+  <a href="?state=low" class="tab {% if state == 'low' %}active{% endif %}">موجودی کم</a>
+</div>
+<div class="card">
+  <div class="card-head">
+    <form class="filters" method="get" style="flex:1">
+      <input type="hidden" name="state" value="{{ state|default:'' }}">
+      <div class="search">{% icon 'search' 17 %}<input class="input" name="q" value="{{ q }}" placeholder="نام یا کد محصول..."></div>
+      <select class="input" name="cat" style="width:auto" onchange="this.form.submit()">
+        <option value="">همه دسته‌ها</option>
+        {% for c in categories %}<option value="{{ c.pk }}" {% if cat == c.pk|stringformat:"s" %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-light">فیلتر</button>
+    </form>
+  </div>
+  {% if page.object_list %}
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>محصول</th><th>دسته</th><th>قیمت (تومان)</th><th>موجودی</th><th>فروش / بازدید</th><th>نمایش</th><th>ویژه</th><th></th></tr></thead>
+    <tbody>
+    {% for p in page.object_list %}
+      <tr>
+        <td><a href="{% url 'dashboard:product_edit' p.pk %}" class="prod-cell">
+          {% if p.image %}<img class="thumb" src="{{ p.image.url }}" alt="">{% else %}<img class="thumb" src="{% static 'img/placeholder.svg' %}" alt="">{% endif %}
+          <div><b>{{ p.name|truncatechars:40 }}</b><small class="muted ltr">{{ p.sku }}</small></div></a></td>
+        <td><span class="chip">{{ p.category.name }}</span></td>
+        <td>{% if p.discount_price %}<b>{{ p.discount_price|price }}</b><br><del class="muted" style="font-size:12px">{{ p.price|price }}</del>{% else %}<b>{{ p.price|price }}</b>{% endif %}</td>
+        <td>
+          {% if p.vcount %}
+            <span class="chip {% if not p.vstock %}off{% elif p.vstock <= low %}warn{% else %}ok{% endif %}">{{ p.vstock|default:0|fa }} عدد</span><br><small class="muted">{{ p.vcount|fa }} تنوع</small>
+          {% else %}
+            <input class="stock-input" type="number" min="0" value="{{ p.stock }}" data-kind="product" data-url="{% url 'dashboard:stock_update' p.pk %}" title="ویرایش سریع موجودی">
+          {% endif %}
+        </td>
+        <td>{{ p.sold|fa }} / <span class="muted">{{ p.views|fa }}</span></td>
+        <td><label class="switch"><input type="checkbox" {% if p.is_active %}checked{% endif %} data-toggle-url="{% url 'dashboard:product_toggle' p.pk %}" data-field="is_active"><span></span></label></td>
+        <td><label class="switch"><input type="checkbox" {% if p.is_featured %}checked{% endif %} data-toggle-url="{% url 'dashboard:product_toggle' p.pk %}" data-field="is_featured"><span></span></label></td>
+        <td><div class="actions">
+          <a class="act" href="{{ p.get_absolute_url }}" target="_blank" title="مشاهده در سایت">{% icon 'eye' 16 %}</a>
+          <a class="act" href="{% url 'dashboard:product_edit' p.pk %}" title="ویرایش">{% icon 'edit' 16 %}</a>
+          <form method="post" action="{% url 'dashboard:product_duplicate' p.pk %}">{% csrf_token %}<button class="act" title="کپی">{% icon 'copy' 16 %}</button></form>
+          <form method="post" action="{% url 'dashboard:product_delete' p.pk %}" data-confirm="محصول «{{ p.name }}» حذف می‌شود.">{% csrf_token %}<button class="act danger" title="حذف">{% icon 'trash' 16 %}</button></form>
+        </div></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% include "dashboard/_pagination.html" %}
+  {% else %}
+  <div class="empty"><div class="e-ic">{% icon 'tag' 30 %}</div>محصولی پیدا نشد.<br><a href="{% url 'dashboard:product_add' %}" class="btn btn-brand" style="margin-top:12px">افزودن اولین محصول</a></div>
+  {% endif %}
+</div>
+{% endblock %}

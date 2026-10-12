@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}راهنمای خرید | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>راهنمای خرید</span></nav><h1>راهنمای خرید از میرانا</h1>
+    <p class="muted">خرید در میرانا به‌صورت «پیش‌سفارش + تایید ادمین» انجام می‌شود تا پرداخت امن و ارتباط مستقیم با شما داشته باشیم.</p></div>
+  <div class="big-steps reveal-stagger" style="margin-top:24px">
+    <div class="big-step"><span class="n">۱</span><span class="feature-ic">{% icon 'user' 24 %}</span><h3>ثبت‌نام / ورود</h3><p class="muted">با شماره موبایل خود ثبت‌نام کنید تا سفارش‌ها و وضعیت آن‌ها را همیشه ببینید.</p></div>
+    <div class="big-step"><span class="n">۲</span><span class="feature-ic">{% icon 'cart' 24 %}</span><h3>انتخاب و پیش‌سفارش</h3><p class="muted">محصول، سایز و رنگ را انتخاب کنید و با وارد کردن آدرس، پیش‌سفارش ثبت کنید. موجودی برای شما رزرو می‌شود.</p></div>
+    <div class="big-step"><span class="n">۳</span><span class="feature-ic">{% icon 'card' 24 %}</span><h3>پرداخت کارت به کارت</h3><p class="muted">مبلغ سفارش را به شماره کارت اعلام‌شده واریز کنید (حداکثر تا {{ site.order_hold_hours|fa }} ساعت).</p></div>
+    <div class="big-step"><span class="n">۴</span><span class="feature-ic">{% icon 'telegram' 24 %}</span><h3>ارسال پیام به ادمین</h3><p class="muted">پیام آماده سفارش (شامل لینک سفارش) و رسید را برای ادمین در تلگرام یا روبیکا بفرستید.</p></div>
+    <div class="big-step"><span class="n">۵</span><span class="feature-ic">{% icon 'box' 24 %}</span><h3>تایید و آماده‌سازی</h3><p class="muted">پس از تایید پرداخت توسط ادمین، سفارش شما بسته‌بندی و آماده ارسال می‌شود.</p></div>
+    <div class="big-step"><span class="n">۶</span><span class="feature-ic">{% icon 'truck' 24 %}</span><h3>ارسال + کد رهگیری</h3><p class="muted">بعد از ارسال، کد رهگیری پستی در صفحه سفارش شما نمایش داده می‌شود.</p></div>
+  </div>
+  <div class="social-cta reveal-stagger" style="margin-top:30px">
+    {% if site.telegram_id %}<a class="social-card tg" href="{{ site.telegram_url }}" target="_blank" rel="noopener"><span class="sc-ic">{% icon 'telegram' 30 %}</span><div><b>تلگرام ادمین</b><small>@{{ site.telegram_id }}</small><br><small>{{ site.telegram_url }}</small></div><span class="sc-arrow">{% icon 'arrow-left' 22 %}</span></a>{% endif %}
+    {% if site.rubika_id %}<a class="social-card rb" href="{{ site.rubika_url }}" target="_blank" rel="noopener"><span class="sc-ic">{% icon 'rubika' 30 %}</span><div><b>روبیکا ادمین</b><small>@{{ site.rubika_id }}</small><br><small>{{ site.rubika_url }}</small></div><span class="sc-arrow">{% icon 'arrow-left' 22 %}</span></a>{% endif %}
+  </div>
+</div>
+{% endblock %}

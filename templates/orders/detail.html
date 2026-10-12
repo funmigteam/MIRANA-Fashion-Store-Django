@@ -1,0 +1,83 @@
+{% extends "accounts/account_base.html" %}
+{% load static %}
+{% block title %}سفارش {{ order.code }} | {{ site.site_name }}{% endblock %}
+{% block account %}
+<div class="card reveal">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+    <div><h2 style="margin:0;font-size:20px">سفارش <span class="ltr">{{ order.code }}</span></h2><small class="muted">ثبت: {{ order.created_at|jdate:"long" }}</small></div>
+    <span class="status-pill st-{{ order.status }}" style="font-size:13px;padding:6px 14px">{{ order.get_status_display }}</span>
+  </div>
+  {% include "partials/order_progress.html" %}
+
+  {% if order.tracking_code %}
+  <div class="tracking-box" style="margin-top:20px">
+    <span class="feature-ic" style="background:#fff;color:#1b7f74">{% icon 'truck' 24 %}</span>
+    <div style="flex:1"><small class="muted">کد رهگیری مرسوله ({{ order.get_shipping_method_display }})</small><div class="code">{{ order.tracking_code }}</div></div>
+    <button class="btn btn-sm btn-light" data-copy="{{ order.tracking_code }}">{% icon 'copy' 14 %} کپی</button>
+    {% if order.tracking_url %}<a class="btn btn-sm" href="{{ order.tracking_url }}" target="_blank" rel="noopener">رهگیری {% icon 'external' 14 %}</a>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if order.admin_note %}<div class="pre-note" style="margin-top:16px">{% icon 'chat' 18 %}<span><b>پیام ادمین:</b> {{ order.admin_note|linebreaksbr }}</span></div>{% endif %}
+</div>
+
+{% if order.status == 'pending' %}
+<div class="card reveal" style="border-color:var(--brand);background:linear-gradient(135deg,#fff,#fbf3ea)">
+  <div class="card-title">{% icon 'clock' %} در انتظار پرداخت و تایید ادمین</div>
+  <p class="muted" style="font-size:14px">مبلغ <b>{{ order.total|price }} تومان</b> را به کارت <b class="ltr">{{ site.card_number }}</b> ({{ site.card_holder }}) واریز و پیام سفارش را برای ادمین بفرستید.</p>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a href="{% url 'orders:send' order.code %}" class="btn btn-brand">{% icon 'chat' 16 %} پیام آماده برای ادمین</a>
+    {% if site.telegram_id %}<a class="btn btn-telegram" href="{{ site.telegram_url }}" target="_blank" rel="noopener">{% icon 'telegram' 16 %} تلگرام</a>{% endif %}
+    {% if site.rubika_id %}<a class="btn btn-rubika" href="{{ site.rubika_url }}" target="_blank" rel="noopener">{% icon 'rubika' 16 %} روبیکا</a>{% endif %}
+  </div>
+  <hr style="border:0;border-top:1px dashed var(--line);margin:20px 0">
+  <form method="post" action="{% url 'orders:receipt' order.code %}" enctype="multipart/form-data" class="inline-form" style="flex-wrap:wrap" data-once>
+    {% csrf_token %}
+    <label class="field" style="flex:1;min-width:220px"><span style="font-size:13px;font-weight:700">آپلود تصویر رسید (اختیاری){% if order.receipt %} — <span class="text-success">رسید ثبت شده ✓</span>{% endif %}</span>
+      <input type="file" name="receipt" accept="image/*" class="input"></label>
+    <button class="btn btn-light" type="submit" style="align-self:end">ارسال رسید</button>
+  </form>
+  <form method="post" action="{% url 'orders:cancel' order.code %}" data-confirm="آیا از لغو این پیش‌سفارش مطمئن هستید؟" style="margin-top:14px">{% csrf_token %}
+    <button class="remove-btn" type="submit">{% icon 'x-circle' 14 %} لغو پیش‌سفارش</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="card reveal">
+  <div class="card-title">{% icon 'box' %} اقلام سفارش</div>
+  <table class="items-table">
+    <thead><tr><th>محصول</th><th class="hide-sm">قیمت واحد</th><th>تعداد</th><th>جمع</th></tr></thead>
+    <tbody>
+    {% for it in order.items.all %}
+      <tr>
+        <td><div style="display:flex;gap:10px;align-items:center">
+          {% if it.product and it.product.image %}<img class="mini-thumb" src="{{ it.product.image.url }}" alt="">{% else %}<img class="mini-thumb" src="{% static 'img/placeholder.svg' %}" alt="">{% endif %}
+          <div>{% if it.product %}<a href="{{ it.product.get_absolute_url }}"><b>{{ it.product_name }}</b></a>{% else %}<b>{{ it.product_name }}</b>{% endif %}{% if it.variant_label %}<br><small class="muted">{{ it.variant_label }}</small>{% endif %}</div>
+        </div></td>
+        <td class="hide-sm">{{ it.unit_price|price }}</td><td>{{ it.quantity|fa }}</td><td><b>{{ it.total|price }}</b></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div style="max-width:360px;margin-inline-start:auto;margin-top:14px">
+    <div class="summary-row"><span>جمع اقلام</span><span>{{ order.subtotal|price }} تومان</span></div>
+    {% if order.discount %}<div class="summary-row text-success"><span>تخفیف{% if order.coupon %} ({{ order.coupon.code }}){% endif %}</span><span>− {{ order.discount|price }}</span></div>{% endif %}
+    <div class="summary-row"><span>ارسال ({{ order.get_shipping_method_display }})</span><span>{% if order.shipping_cost %}{{ order.shipping_cost|price }} تومان{% else %}رایگان{% endif %}</span></div>
+    <div class="summary-row total"><span>مبلغ کل</span><span>{{ order.total|price }} تومان</span></div>
+  </div>
+</div>
+
+<div class="cart-layout" style="grid-template-columns:1fr 1fr;gap:18px;margin-top:18px">
+  <div class="card reveal" style="margin:0">
+    <div class="card-title">{% icon 'home' %} آدرس تحویل</div>
+    <p style="font-size:14px;margin:0"><b>{{ order.full_name }}</b> — <span class="ltr">{{ order.phone|fa }}</span><br>{{ order.province }}، {{ order.city }}<br>{{ order.address }}<br><span class="muted">کد پستی: {{ order.postal_code|fa }}</span></p>
+    {% if order.note %}<p class="muted" style="font-size:13px;margin-top:10px">توضیحات: {{ order.note }}</p>{% endif %}
+  </div>
+  <div class="card reveal" style="margin:0">
+    <div class="card-title">{% icon 'clock' %} تاریخچه سفارش</div>
+    <ul class="timeline">
+      {% for l in order.logs.all %}<li><b>{{ l.get_status_display }}</b>{% if l.note %} — {{ l.note }}{% endif %}<br><small class="muted">{{ l.created_at|jdate:"datetime" }}</small></li>{% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

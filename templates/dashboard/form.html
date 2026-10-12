@@ -1,0 +1,17 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+{% block crumb %}<a href="{% url back %}">بازگشت</a>{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:880px">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  <div class="form-grid">
+    {% for f in form %}{% include "partials/field.html" %}{% endfor %}
+  </div>
+  <div class="sticky-actions">
+    <a href="{% url back %}" class="btn btn-light">انصراف</a>
+    <button type="submit" class="btn btn-brand">{% icon 'check' 16 %} ذخیره</button>
+  </div>
+</form>
+{% endblock %}

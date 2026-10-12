@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div class="container">
+    <div class="slider">
+      {% for b in banners %}
+      <div class="slide theme-{{ b.theme }}">
+        <div class="slide-content">
+          <span class="slide-kicker">{% icon 'star' 14 %} {{ site.site_name }} · {{ site.site_name_en }}</span>
+          <h2>{{ b.title }}</h2>
+          {% if b.subtitle %}<p>{{ b.subtitle }}</p>{% endif %}
+          {% if b.button_text %}<div><a href="{{ b.link|default:'/shop/' }}" class="btn btn-lg {% if b.theme == 'dark' %}btn-brand{% endif %}">{{ b.button_text }} {% icon 'arrow-left' 18 %}</a></div>{% endif %}
+        </div>
+        <div class="slide-media">
+          {% if b.image %}<img src="{{ b.image.url }}" alt="{{ b.title }}">
+          {% else %}<div class="slide-art"><span class="ring" style="width:420px;height:420px"></span><span class="ring" style="width:280px;height:280px;animation-delay:-3s"></span><span class="big-letter">M</span></div>{% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="slide theme-sand active">
+        <div class="slide-content">
+          <span class="slide-kicker">{% icon 'star' 14 %} کالکشن جدید</span>
+          <h2>استایل روزمره،<br>با امضای {{ site.site_name }}</h2>
+          <p>{{ site.slogan }}</p>
+          <div><a href="{% url 'shop:list' %}" class="btn btn-lg">مشاهده محصولات {% icon 'arrow-left' 18 %}</a></div>
+        </div>
+        <div class="slide-media"><div class="slide-art"><span class="ring" style="width:420px;height:420px"></span><span class="ring" style="width:280px;height:280px"></span><span class="big-letter">M</span></div></div>
+      </div>
+      {% endfor %}
+      {% if banners|length > 1 %}
+      <div class="slider-dots">{% for b in banners %}<button aria-label="اسلاید {{ forloop.counter }}" {% if forloop.first %}class="active"{% endif %}></button>{% endfor %}</div>
+      <div class="slider-arrows">
+        <button data-prev aria-label="قبلی">{% icon 'arrow-right' 18 %}</button>
+        <button data-next aria-label="بعدی">{% icon 'arrow-left' 18 %}</button>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="features reveal-stagger">
+      <div class="feature"><span class="feature-ic">{% icon 'truck' 24 %}</span><div><b>ارسال به سراسر ایران</b><small>پست پیشتاز، تیپاکس و پیک</small></div></div>
+      <div class="feature"><span class="feature-ic">{% icon 'shield' 24 %}</span><div><b>ضمانت اصالت و کیفیت</b><small>تولید و کنترل کیفیت میرانا</small></div></div>
+      <div class="feature"><span class="feature-ic">{% icon 'refresh' 24 %}</span><div><b>۷ روز ضمانت تعویض</b><small>در صورت عدم تناسب سایز</small></div></div>
+      <div class="feature"><span class="feature-ic">{% icon 'chat' 24 %}</span><div><b>پشتیبانی واقعی</b><small>تلگرام و روبیکا · {{ site.working_hours }}</small></div></div>
+    </div>
+  </div>
+</section>
+
+{% if categories %}
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">CATEGORIES</span><h2>دسته‌بندی‌های میرانا</h2><p>هرچیزی که برای یک استایل کامل نیاز دارید</p></div>
+      <a href="{% url 'shop:list' %}" class="link-arrow">همه محصولات {% icon 'arrow-left' 16 %}</a>
+    </div>
+    <div class="cat-grid reveal-stagger">
+      {% for c in categories %}
+      <a href="{{ c.get_absolute_url }}" class="cat-card">
+        {% if c.image %}<img src="{{ c.image.url }}" alt="{{ c.name }}" loading="lazy">{% else %}<span class="cat-placeholder">{{ c.name|slice:":1" }}</span>{% endif %}
+        <div class="cat-info"><b>{{ c.name }}</b><small>{{ c.description|default:"مشاهده" }} {% icon 'arrow-left' 12 %}</small></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if featured %}
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">FEATURED</span><h2>منتخب میرانا</h2><p>محبوب‌ترین‌های این فصل</p></div>
+      <a href="{% url 'shop:list' %}" class="link-arrow">مشاهده همه {% icon 'arrow-left' 16 %}</a>
+    </div>
+    <div class="product-grid reveal-stagger">{% for p in featured %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="promo reveal">
+      <div style="position:relative;z-index:1">
+        <span class="eyebrow" style="color:#e2b48f">HOW TO ORDER</span>
+        <h2>خرید از میرانا ساده‌ست</h2>
+        <p>سفارش شما ابتدا به‌صورت پیش‌سفارش ثبت می‌شود. بعد کافیه پیام آماده سفارش رو برای ادمین در تلگرام یا روبیکا بفرستید تا بعد از تایید پرداخت، بسته شما آماده و ارسال بشه.</p>
+        <a href="{% url 'core:how_to_buy' %}" class="btn btn-brand">راهنمای کامل خرید {% icon 'arrow-left' 16 %}</a>
+      </div>
+      <div class="promo-steps reveal-stagger">
+        <div class="promo-step"><span>۱</span><div>انتخاب محصول و ثبت پیش‌سفارش</div></div>
+        <div class="promo-step"><span>۲</span><div>ارسال پیام سفارش + رسید به ادمین</div></div>
+        <div class="promo-step"><span>۳</span><div>تایید پرداخت و آماده‌سازی</div></div>
+        <div class="promo-step"><span>۴</span><div>ارسال و دریافت کد رهگیری پستی</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if newest %}
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">NEW IN</span><h2>تازه‌ترین‌ها</h2><p>جدیدترین محصولات اضافه‌شده</p></div>
+      <a href="{% url 'shop:list' %}?sort=new" class="link-arrow">مشاهده همه {% icon 'arrow-left' 16 %}</a>
+    </div>
+    <div class="product-grid reveal-stagger">{% for p in newest %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if sale %}
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">SALE</span><h2>تخفیف‌های ویژه</h2><p>فرصت محدود، تا پایان موجودی</p></div>
+      <a href="{% url 'shop:list' %}?sale=1" class="link-arrow">همه تخفیف‌ها {% icon 'arrow-left' 16 %}</a>
+    </div>
+    <div class="product-grid reveal-stagger">{% for p in sale %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+{% if best %}
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">BEST SELLERS</span><h2>پرفروش‌ها</h2></div>
+      <a href="{% url 'shop:list' %}?sort=best" class="link-arrow">مشاهده همه {% icon 'arrow-left' 16 %}</a>
+    </div>
+    <div class="product-grid reveal-stagger">{% for p in best|slice:":4" %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal"><div><span class="eyebrow">CONTACT</span><h2>با ما در ارتباط باشید</h2><p>ثبت نهایی سفارش، پشتیبانی و مشاوره سایز از طریق پیام‌رسان‌ها</p></div></div>
+    <div class="social-cta reveal-stagger">
+      {% if site.telegram_id %}
+      <a class="social-card tg" href="{{ site.telegram_url }}" target="_blank" rel="noopener">
+        <span class="sc-ic">{% icon 'telegram' 30 %}</span>
+        <div><b>تلگرام ادمین میرانا</b><small>@{{ site.telegram_id }}</small><br><small>{{ site.telegram_url }}</small></div>
+        <span class="sc-arrow">{% icon 'arrow-left' 22 %}</span>
+      </a>
+      {% endif %}
+      {% if site.rubika_id %}
+      <a class="social-card rb" href="{{ site.rubika_url }}" target="_blank" rel="noopener">
+        <span class="sc-ic">{% icon 'rubika' 30 %}</span>
+        <div><b>روبیکا ادمین میرانا</b><small>@{{ site.rubika_id }}</small><br><small>{{ site.rubika_url }}</small></div>
+        <span class="sc-arrow">{% icon 'arrow-left' 22 %}</span>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

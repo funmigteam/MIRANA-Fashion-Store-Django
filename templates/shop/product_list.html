@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{% if category %}{{ category.name }}{% elif q %}جستجو: {{ q }}{% else %}فروشگاه{% endif %} | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><a href="{% url 'shop:list' %}"><span>فروشگاه</span></a>
+      {% if category.parent %}<a href="{{ category.parent.get_absolute_url }}"><span>{{ category.parent.name }}</span></a>{% endif %}
+      {% if category %}<span>{{ category.name }}</span>{% endif %}</nav>
+    <h1>{% if category %}{{ category.name }}{% elif q %}نتایج جستجو «{{ q }}»{% elif request.GET.sale %}تخفیف‌های ویژه{% else %}همه محصولات{% endif %}</h1>
+    {% if category.description %}<p class="muted">{{ category.description }}</p>{% endif %}
+  </div>
+
+  <div class="shop-layout" style="margin-top:20px">
+    <aside class="filters card" aria-label="فیلترها">
+      <form method="get" id="filter-form">
+        <div class="filter-toggle" style="justify-content:space-between;align-items:center;margin-bottom:10px"><b>فیلترها</b><button type="button" class="icon-btn" data-drawer-close aria-label="بستن">{% icon 'close' 20 %}</button></div>
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <div class="filter-group">
+          <h4>دسته‌بندی</h4>
+          <ul class="filter-list">
+            <li><a href="{% url 'shop:list' %}" class="{% if not category %}active{% endif %}">همه</a></li>
+            {% for c in nav_categories %}
+              <li><a href="{{ c.get_absolute_url }}" class="{% if category == c %}active{% endif %}">{{ c.name }}</a></li>
+              {% if c.children.all %}<li class="sub">{% for s in c.children.all %}{% if s.is_active %}<a href="{{ s.get_absolute_url }}" class="{% if category == s %}active{% endif %}">{{ s.name }}</a>{% endif %}{% endfor %}</li>{% endif %}
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="filter-group">
+          <h4>مناسب برای</h4>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="gender" value="" hidden {% if not request.GET.gender %}checked{% endif %}><span>همه</span></label>
+            {% for k, v in genders %}<label class="chip"><input type="radio" name="gender" value="{{ k }}" hidden {% if request.GET.gender == k %}checked{% endif %}><span>{{ v }}</span></label>{% endfor %}
+          </div>
+        </div>
+        {% if sizes %}
+        <div class="filter-group">
+          <h4>سایز</h4>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="size" value="" hidden {% if not request.GET.size %}checked{% endif %}><span>همه</span></label>
+            {% for s in sizes %}<label class="chip"><input type="radio" name="size" value="{{ s }}" hidden {% if request.GET.size == s %}checked{% endif %}><span>{{ s }}</span></label>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        <div class="filter-group">
+          <h4>محدوده قیمت (تومان)</h4>
+          <div class="form-grid" style="gap:8px">
+            <input class="input" name="min" inputmode="numeric" placeholder="از" value="{{ request.GET.min }}">
+            <input class="input" name="max" inputmode="numeric" placeholder="تا" value="{{ request.GET.max }}">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="field check"><input type="checkbox" name="stock" value="1" {% if request.GET.stock %}checked{% endif %}><span>فقط کالاهای موجود</span></label>
+          <label class="field check" style="margin-top:8px"><input type="checkbox" name="sale" value="1" {% if request.GET.sale %}checked{% endif %}><span>فقط تخفیف‌دار</span></label>
+        </div>
+        <div style="display:flex;gap:8px;padding-top:16px">
+          <button class="btn btn-block" type="submit">اعمال فیلتر</button>
+          <a class="btn btn-ghost" href="{{ request.path }}">حذف</a>
+        </div>
+      </form>
+    </aside>
+
+    <section>
+      <div class="toolbar">
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn btn-sm btn-light filter-toggle" data-filters-open type="button">{% icon 'filter' 16 %} فیلترها</button>
+          <span class="muted">{{ page.paginator.count|fa }} محصول</span>
+        </div>
+        <div class="sort">
+          {% for k, label in sorts.items %}<a href="{% query_replace sort=k page='' %}" class="chip {% if sort == k %}active{% endif %}">{{ label }}</a>{% endfor %}
+        </div>
+      </div>
+
+      {% if page.object_list %}
+        <div class="product-grid reveal-stagger" style="grid-template-columns:repeat(auto-fill,minmax(210px,1fr))">
+          {% for p in page.object_list %}{% include "partials/product_card.html" %}{% endfor %}
+        </div>
+        {% if page.paginator.num_pages > 1 %}
+        <nav class="pagination">
+          {% if page.has_previous %}<a href="{% query_replace page=page.previous_page_number %}">{% icon 'arrow-right' 16 %}</a>{% endif %}
+          {% for n in page.paginator.page_range %}
+            {% if n == page.number %}<span class="current">{{ n|fa }}</span>
+            {% elif n > page.number|add:-3 and n < page.number|add:3 %}<a href="{% query_replace page=n %}">{{ n|fa }}</a>{% endif %}
+          {% endfor %}
+          {% if page.has_next %}<a href="{% query_replace page=page.next_page_number %}">{% icon 'arrow-left' 16 %}</a>{% endif %}
+        </nav>
+        {% endif %}
+      {% else %}
+        <div class="empty card">
+          <div class="empty-ic">{% icon 'search' 40 %}</div>
+          <h3>محصولی پیدا نشد</h3>
+          <p class="muted">فیلترها را تغییر دهید یا عبارت دیگری جستجو کنید.</p>
+          <a href="{% url 'shop:list' %}" class="btn">همه محصولات</a>
+        </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll('#filter-form input[type=radio], #filter-form input[type=checkbox]').forEach(function (el) {
+    el.addEventListener('change', function () { if (window.innerWidth > 900) el.form.submit(); });
+  });
+</script>
+{% endblock %}

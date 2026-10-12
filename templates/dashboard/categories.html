@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% block title %}دسته‌بندی‌ها{% endblock %}
+{% block heading %}دسته‌بندی‌ها{% endblock %}
+{% block crumb %}دسته‌های اصلی و زیردسته‌ها{% endblock %}
+{% block top_actions %}<a href="{% url 'dashboard:category_add' %}" class="btn btn-brand">{% icon 'plus' 16 %} دسته جدید</a>{% endblock %}
+{% block content %}
+<div class="card">
+  {% if categories %}
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>نام</th><th>آدرس</th><th>محصولات</th><th>ترتیب</th><th>وضعیت</th><th></th></tr></thead>
+    <tbody>
+    {% for c in categories %}
+      <tr>
+        <td><div class="prod-cell">{% if c.image %}<img class="thumb" src="{{ c.image.url }}" alt="">{% endif %}<b>{{ c.name }}</b></div></td>
+        <td><a class="muted ltr" href="{{ c.get_absolute_url }}" target="_blank">{{ c.slug }}</a></td>
+        <td>{{ counts|get_item:c.pk|fa }}</td><td>{{ c.order|fa }}</td>
+        <td>{% if c.is_active %}<span class="chip ok">فعال</span>{% else %}<span class="chip off">غیرفعال</span>{% endif %}</td>
+        <td><div class="actions">
+          <a class="act" href="{% url 'dashboard:category_edit' c.pk %}">{% icon 'edit' 16 %}</a>
+          <form method="post" action="{% url 'dashboard:category_delete' c.pk %}" data-confirm="دسته «{{ c.name }}» و زیردسته‌هایش حذف می‌شوند.">{% csrf_token %}<button class="act danger">{% icon 'trash' 16 %}</button></form>
+        </div></td>
+      </tr>
+      {% for s in c.children.all %}
+      <tr>
+        <td style="padding-right:36px"><div class="prod-cell"><span class="muted">└</span>{% if s.image %}<img class="thumb" src="{{ s.image.url }}" alt="">{% endif %}{{ s.name }}</div></td>
+        <td><a class="muted ltr" href="{{ s.get_absolute_url }}" target="_blank">{{ s.slug }}</a></td>
+        <td>{{ counts|get_item:s.pk|fa }}</td><td>{{ s.order|fa }}</td>
+        <td>{% if s.is_active %}<span class="chip ok">فعال</span>{% else %}<span class="chip off">غیرفعال</span>{% endif %}</td>
+        <td><div class="actions">
+          <a class="act" href="{% url 'dashboard:category_edit' s.pk %}">{% icon 'edit' 16 %}</a>
+          <form method="post" action="{% url 'dashboard:category_delete' s.pk %}" data-confirm="دسته «{{ s.name }}» حذف می‌شود.">{% csrf_token %}<button class="act danger">{% icon 'trash' 16 %}</button></form>
+        </div></td>
+      </tr>
+      {% endfor %}
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}<div class="empty"><div class="e-ic">{% icon 'grid' 30 %}</div>هنوز دسته‌ای ساخته نشده.</div>{% endif %}
+</div>
+{% endblock %}

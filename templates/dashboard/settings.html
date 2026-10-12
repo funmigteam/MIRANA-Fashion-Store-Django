@@ -1,0 +1,37 @@
+{% extends "dashboard/base.html" %}
+{% block title %}تنظیمات{% endblock %}
+{% block heading %}تنظیمات فروشگاه{% endblock %}
+{% block crumb %}نام، آیدی تلگرام و روبیکا، کارت بانکی، هزینه ارسال و ...{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data">{% csrf_token %}
+  <div class="grid g-2">
+    <div class="card"><div class="card-head"><h2>{% icon 'home' 18 %} اطلاعات برند</h2></div>
+      <div class="form-grid">
+        {% include "partials/field.html" with f=form.site_name %}{% include "partials/field.html" with f=form.site_name_en %}
+        {% include "partials/field.html" with f=form.slogan full=True %}{% include "partials/field.html" with f=form.announcement full=True %}
+        {% include "partials/field.html" with f=form.about %}{% include "partials/field.html" with f=form.footer_text full=True %}
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="card-head"><h2>{% icon 'telegram' 18 %} تلگرام و روبیکا (ثبت سفارش)</h2></div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.telegram_id %}{% include "partials/field.html" with f=form.rubika_id %}
+          {% include "partials/field.html" with f=form.telegram_channel %}{% include "partials/field.html" with f=form.rubika_channel %}
+          {% include "partials/field.html" with f=form.instagram_id %}
+        </div>
+        <p class="muted" style="font-size:12px;margin:10px 0 0">لینک‌ها به‌صورت خودکار ساخته می‌شوند: <span class="ltr">t.me/{{ form.instance.telegram_id }}</span> و <span class="ltr">rubika.ir/{{ form.instance.rubika_id }}</span></p>
+      </div>
+      <div class="card"><div class="card-head"><h2>{% icon 'card' 18 %} اطلاعات پرداخت</h2></div>
+        <div class="form-grid">{% include "partials/field.html" with f=form.card_number %}{% include "partials/field.html" with f=form.card_holder %}{% include "partials/field.html" with f=form.sheba full=True %}</div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><h2>{% icon 'truck' 18 %} ارسال و سفارش</h2></div>
+      <div class="form-grid">{% include "partials/field.html" with f=form.shipping_cost %}{% include "partials/field.html" with f=form.free_shipping_over %}{% include "partials/field.html" with f=form.order_hold_hours full=True %}</div>
+    </div>
+    <div class="card"><div class="card-head"><h2>{% icon 'phone' 18 %} اطلاعات تماس</h2></div>
+      <div class="form-grid">{% include "partials/field.html" with f=form.phone %}{% include "partials/field.html" with f=form.email %}{% include "partials/field.html" with f=form.working_hours %}{% include "partials/field.html" with f=form.address %}</div>
+    </div>
+  </div>
+  <div class="sticky-actions"><button class="btn btn-brand" type="submit">{% icon 'check' 16 %} ذخیره تنظیمات</button></div>
+</form>
+{% endblock %}

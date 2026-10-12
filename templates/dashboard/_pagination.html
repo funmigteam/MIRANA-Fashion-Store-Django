@@ -1,0 +1,10 @@
+{% if page.paginator.num_pages > 1 %}
+<nav class="pagination">
+  {% if page.has_previous %}<a href="{% query_replace page=page.previous_page_number %}">{% icon 'arrow-right' 16 %}</a>{% endif %}
+  {% for n in page.paginator.page_range %}
+    {% if n == page.number %}<span class="current">{{ n|fa }}</span>
+    {% elif n > page.number|add:-3 and n < page.number|add:3 %}<a href="{% query_replace page=n %}">{{ n|fa }}</a>{% endif %}
+  {% endfor %}
+  {% if page.has_next %}<a href="{% query_replace page=page.next_page_number %}">{% icon 'arrow-left' 16 %}</a>{% endif %}
+</nav>
+{% endif %}

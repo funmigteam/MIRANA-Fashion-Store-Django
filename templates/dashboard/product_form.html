@@ -1,0 +1,118 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{% if product.pk %}ویرایش {{ product.name }}{% else %}محصول جدید{% endif %}{% endblock %}
+{% block heading %}{% if product.pk %}ویرایش محصول{% else %}افزودن محصول جدید{% endif %}{% endblock %}
+{% block crumb %}<a href="{% url 'dashboard:products' %}">محصولات</a> / {% if product.pk %}{{ product.name }}{% else %}جدید{% endif %}{% endblock %}
+{% block top_actions %}{% if product.pk %}<a href="{{ product.get_absolute_url }}" target="_blank" class="btn btn-light">{% icon 'eye' 15 %} <span class="hide-sm">مشاهده در سایت</span></a>{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" id="product-form">
+  {% csrf_token %}
+  {{ images.management_form }}{{ variants.management_form }}
+  {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+  {% if images.non_form_errors or variants.non_form_errors %}<div class="form-errors">{{ images.non_form_errors }} {{ variants.non_form_errors }}</div>{% endif %}
+
+  <div class="grid g-main">
+    <div class="grid">
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'edit' 18 %} اطلاعات اصلی</h2></div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.name full=True %}
+          {% include "partials/field.html" with f=form.category %}
+          {% include "partials/field.html" with f=form.gender %}
+          {% include "partials/field.html" with f=form.short_description %}
+          {% include "partials/field.html" with f=form.description %}
+          {% include "partials/field.html" with f=form.material %}
+          {% include "partials/field.html" with f=form.care %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'card' 18 %} قیمت و موجودی</h2></div>
+        <div class="form-grid">
+          {% include "partials/field.html" with f=form.price %}
+          {% include "partials/field.html" with f=form.discount_price %}
+          {% include "partials/field.html" with f=form.stock %}
+          {% include "partials/field.html" with f=form.sku %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'grid' 18 %} تنوع‌ها (رنگ / سایز / موجودی)</h2><button type="button" class="btn btn-sm" data-add-variant>{% icon 'plus' 14 %} افزودن ردیف</button></div>
+        <details class="action-card" style="margin-bottom:14px">
+          <summary style="cursor:pointer;font-weight:700">⚡ ساخت سریع ترکیب سایز × رنگ</summary>
+          <div class="presets" style="margin-top:12px">
+            <button type="button" class="chip" data-size-preset="S, M, L, XL">S-XL</button>
+            <button type="button" class="chip" data-size-preset="XS, S, M, L, XL, XXL">XS-XXL</button>
+            <button type="button" class="chip" data-size-preset="38, 40, 42, 44, 46">۳۸-۴۶</button>
+            <button type="button" class="chip" data-size-preset="37, 38, 39, 40, 41, 42, 43, 44">کفش ۳۷-۴۴</button>
+            <button type="button" class="chip" data-size-preset="فری‌سایز">فری‌سایز</button>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>سایزها (با کاما جدا کنید)</label><input class="input" id="bulk-sizes" placeholder="S, M, L, XL"></div>
+            <div class="field"><label>موجودی هر ترکیب</label><input class="input" id="bulk-stock" type="number" min="0" value="5"></div>
+            <div class="field full"><label>رنگ‌ها (نام:کد رنگ، با کاما جدا کنید)</label><input class="input" id="bulk-colors" placeholder="مشکی:#111111، کرم:#e8dcc8، سرمه‌ای:#1f2a44"></div>
+          </div>
+          <button type="button" class="btn btn-brand btn-sm" style="margin-top:12px" data-bulk-variants>ساخت ترکیب‌ها</button>
+        </details>
+        <div class="table-wrap"><table class="tbl var-table" style="min-width:560px">
+          <thead><tr><th>نام رنگ</th><th>کد رنگ</th><th>سایز</th><th>موجودی</th><th>اختلاف قیمت</th><th>حذف</th></tr></thead>
+          <tbody id="variant-body">
+            {% for vf in variants %}
+            <tr class="var-row">
+              <td>{{ vf.id }}{{ vf.color }}{% for e in vf.color.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}</td>
+              <td>{{ vf.color_hex }}</td><td>{{ vf.size }}</td><td>{{ vf.stock }}</td><td>{{ vf.extra_price }}</td>
+              <td>{{ vf.DELETE }}</td>
+            </tr>
+            {% empty %}
+            <tr id="var-empty"><td colspan="6" class="muted" style="text-align:center">این محصول تنوع ندارد؛ موجودی از فیلد «موجودی» بالا خوانده می‌شود.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table></div>
+        <template id="variant-template"><tr class="var-row"><td>{{ variants.empty_form.id }}{{ variants.empty_form.color }}</td><td>{{ variants.empty_form.color_hex }}</td><td>{{ variants.empty_form.size }}</td><td>{{ variants.empty_form.stock }}</td><td>{{ variants.empty_form.extra_price }}</td><td>{{ variants.empty_form.DELETE }}</td></tr></template>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'settings' 18 %} وضعیت</h2></div>
+        <div class="grid" style="gap:10px">
+          {% include "partials/field.html" with f=form.is_active %}
+          {% include "partials/field.html" with f=form.is_featured %}
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'image' 18 %} تصویر اصلی</h2></div>
+        <div class="preview-main" id="main-preview">{% if product.image %}<img src="{{ product.image.url }}" alt="">{% else %}{% icon 'image' 48 %}{% endif %}</div>
+        <label class="dropzone">{% icon 'image' 22 %}<div style="font-size:13px;margin-top:6px">برای انتخاب یا کشیدن تصویر کلیک کنید</div>
+          <input type="file" name="image" accept="image/*" data-preview="#main-preview"></label>
+        {% if product.image %}<label class="field check" style="margin-top:10px"><input type="checkbox" name="image-clear" id="image-clear_id"><label for="image-clear_id">حذف تصویر فعلی</label></label>{% endif %}
+        {% for e in form.image.errors %}<small class="text-danger">{{ e }}</small>{% endfor %}
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>{% icon 'grid' 18 %} گالری تصاویر</h2></div>
+        <div class="gallery-grid" style="margin-bottom:12px">
+          {% for imf in images %}
+            <div class="g-item">{{ imf.id }}
+              {% if imf.instance.image %}<img src="{{ imf.instance.image.url }}" alt="" data-lightbox>{% endif %}
+              <div class="g-tools"><span title="ترتیب">{{ imf.order }}</span><label style="display:flex;gap:4px;align-items:center;margin-inline-start:auto">{{ imf.DELETE }} حذف</label></div>
+              <div style="display:none">{{ imf.image }}</div>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="gallery-grid" id="bulk-preview" style="margin-bottom:12px"></div>
+        <label class="dropzone">{% icon 'plus' 22 %}<div style="font-size:13px;margin-top:6px">افزودن چند تصویر به گالری</div>
+          <input type="file" name="gallery_bulk" id="gallery-bulk" accept="image/*" multiple></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="sticky-actions">
+    {% if product.pk %}<button type="submit" form="delete-form" class="btn btn-ghost text-danger" style="margin-inline-end:auto">{% icon 'trash' 15 %} حذف محصول</button>{% endif %}
+    <a href="{% url 'dashboard:products' %}" class="btn btn-light">انصراف</a>
+    <button type="submit" name="and_new" value="1" class="btn btn-light">ذخیره و افزودن بعدی</button>
+    <button type="submit" class="btn btn-brand">{% icon 'check' 16 %} ذخیره محصول</button>
+  </div>
+</form>
+{% if product.pk %}<form method="post" id="delete-form" action="{% url 'dashboard:product_delete' product.pk %}" data-confirm="این محصول برای همیشه حذف می‌شود.">{% csrf_token %}</form>{% endif %}
+{% endblock %}

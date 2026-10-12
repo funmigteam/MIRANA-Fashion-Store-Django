@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}پیگیری سفارش | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:820px">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>پیگیری سفارش</span></nav><h1>پیگیری سفارش</h1><p class="muted">کد سفارش و شماره موبایل ثبت‌شده در سفارش را وارد کنید.</p></div>
+  <form class="card reveal" method="get" style="margin-top:16px">
+    <div class="form-grid">{% for f in form %}{% include "partials/field.html" %}{% endfor %}</div>
+    <button class="btn btn-brand" style="margin-top:16px" type="submit">{% icon 'search' 16 %} پیگیری</button>
+  </form>
+  {% if order %}
+  <div class="card reveal">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <h2 style="margin:0;font-size:19px">سفارش <span class="ltr">{{ order.code }}</span></h2>
+      <span class="status-pill st-{{ order.status }}">{{ order.get_status_display }}</span>
+    </div>
+    {% include "partials/order_progress.html" %}
+    {% if order.tracking_code %}
+    <div class="tracking-box" style="margin-top:18px">
+      <div style="flex:1"><small class="muted">کد رهگیری مرسوله ({{ order.get_shipping_method_display }})</small><div class="code">{{ order.tracking_code }}</div></div>
+      <button class="btn btn-sm btn-light" data-copy="{{ order.tracking_code }}">{% icon 'copy' 14 %} کپی</button>
+      {% if order.tracking_url %}<a class="btn btn-sm" href="{{ order.tracking_url }}" target="_blank" rel="noopener">رهگیری {% icon 'external' 14 %}</a>{% endif %}
+    </div>
+    {% endif %}
+    <p class="muted" style="margin-top:14px;font-size:13px">ثبت: {{ order.created_at|jdate:"long" }} · مبلغ: {{ order.total|price }} تومان</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

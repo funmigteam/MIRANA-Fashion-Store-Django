@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}ثبت‌نام | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container auth-wrap">
+  <div class="auth reveal">
+    <div class="auth-side">
+      <div><span class="eyebrow" style="color:#e2b48f">JOIN MIRANA</span><h2>به خانواده میرانا بپیوندید</h2><p class="hide-sm" style="opacity:.75">ثبت‌نام فقط چند ثانیه طول می‌کشد.</p></div>
+      <span class="big">M</span>
+    </div>
+    <form method="post" class="auth-form" data-once>{% csrf_token %}
+      <h1>ساخت حساب کاربری</h1>
+      <input type="hidden" name="next" value="{{ request.GET.next }}">
+      <div class="form-grid" style="gap:0 14px">
+        {% for f in form %}{% include "partials/field.html" with full=True %}{% endfor %}
+      </div>
+      <button class="btn btn-brand btn-lg btn-block" type="submit">ثبت‌نام</button>
+      <div class="auth-switch">قبلاً ثبت‌نام کرده‌اید؟ <a href="{% url 'accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">وارد شوید</a></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

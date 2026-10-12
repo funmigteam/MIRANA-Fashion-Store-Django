@@ -1,0 +1,52 @@
+{% extends "dashboard/base.html" %}
+{% block title %}سفارش‌ها{% endblock %}
+{% block heading %}سفارش‌ها{% endblock %}
+{% block crumb %}مدیریت پیش‌سفارش‌ها، تایید پرداخت و ارسال{% endblock %}
+{% block content %}
+<div class="tabs">
+  {% for k, label, c in tabs %}<a href="?status={{ k }}{% if q %}&q={{ q|urlencode }}{% endif %}" class="tab {% if status == k %}active{% endif %}">{{ label }} <span class="n">{{ c|fa }}</span></a>{% endfor %}
+</div>
+<div class="card">
+  <div class="card-head">
+    <form class="filters" method="get" style="flex:1">
+      <input type="hidden" name="status" value="{{ status }}">
+      <div class="search">{% icon 'search' 17 %}<input class="input" name="q" value="{{ q }}" placeholder="جستجو: کد سفارش، نام، موبایل، کد رهگیری..."></div>
+      <button class="btn btn-light" type="submit">جستجو</button>
+    </form>
+    <span class="muted">{{ page.paginator.count|fa }} سفارش</span>
+  </div>
+  {% if page.object_list %}
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>کد سفارش</th><th>مشتری</th><th>اقلام</th><th>مبلغ (تومان)</th><th>وضعیت</th><th>رسید</th><th>تاریخ ثبت</th><th>اقدام سریع</th></tr></thead>
+    <tbody>
+    {% for o in page.object_list %}
+      <tr>
+        <td><a href="{{ o.get_panel_url }}"><b class="ltr">{{ o.code }}</b></a></td>
+        <td>{{ o.full_name }}<br><small class="muted ltr">{{ o.phone }}</small></td>
+        <td>{{ o.n|default:0|fa }}</td>
+        <td><b>{{ o.total|price }}</b></td>
+        <td><span class="status-pill st-{{ o.status }}">{{ o.get_status_display }}</span>{% if o.tracking_code %}<br><small class="muted ltr">{{ o.tracking_code }}</small>{% endif %}</td>
+        <td>{% if o.receipt %}<img src="{{ o.receipt.url }}" class="thumb" style="width:36px;height:36px;cursor:zoom-in" data-lightbox alt="رسید">{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td><small>{{ o.created_at|jdate:"datetime" }}</small></td>
+        <td>
+          <div class="actions" style="justify-content:flex-start">
+            {% if o.status == 'pending' %}
+              <form method="post" action="{% url 'dashboard:order_status' o.code %}">{% csrf_token %}<input type="hidden" name="status" value="paid"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-success">{% icon 'check' 14 %} تایید پرداخت</button></form>
+            {% elif o.status == 'paid' %}
+              <form method="post" action="{% url 'dashboard:order_status' o.code %}">{% csrf_token %}<input type="hidden" name="status" value="preparing"><input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn btn-sm btn-purple">{% icon 'box' 14 %} آماده‌سازی</button></form>
+            {% elif o.status == 'preparing' %}
+              <a href="{{ o.get_panel_url }}#ship" class="btn btn-sm btn-teal">{% icon 'truck' 14 %} ثبت ارسال</a>
+            {% endif %}
+            <a class="act" href="{{ o.get_panel_url }}" title="جزئیات">{% icon 'eye' 16 %}</a>
+          </div>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% include "dashboard/_pagination.html" %}
+  {% else %}
+  <div class="empty"><div class="e-ic">{% icon 'box' 30 %}</div>سفارشی با این فیلتر وجود ندارد.</div>
+  {% endif %}
+</div>
+{% endblock %}

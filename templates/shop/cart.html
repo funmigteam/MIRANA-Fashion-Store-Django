@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}سبد خرید | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>سبد خرید</span></nav><h1>سبد خرید</h1></div>
+  {% if items %}
+  <div class="cart-layout" style="margin-top:20px" data-cart-page data-update-url="{% url 'shop:cart_update' %}" data-remove-url="{% url 'shop:cart_remove' %}">
+    <div class="card reveal">
+      {% for it in items %}
+      <div class="cart-item" data-key="{{ it.key }}">
+        <a class="thumb" href="{{ it.product.get_absolute_url }}">{% if it.product.image %}<img src="{{ it.product.image.url }}" alt="">{% else %}<img src="{% static 'img/placeholder.svg' %}" alt="">{% endif %}</a>
+        <div>
+          <h3><a href="{{ it.product.get_absolute_url }}">{{ it.product.name }}</a></h3>
+          {% if it.variant %}<div class="variant">{% if it.variant.color %}<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ it.variant.color_hex }};vertical-align:middle"></i> {% endif %}{{ it.variant.label }}</div>{% endif %}
+          <div class="price" style="margin-top:6px"><b style="font-size:14px">{{ it.unit_price|price }}</b><small>تومان</small></div>
+          {% if it.stock <= 3 %}<small class="text-danger">فقط {{ it.stock|fa }} عدد موجود است</small>{% endif %}
+        </div>
+        <div class="ci-side">
+          <div class="qty">
+            <button type="button" data-qty="1">{% icon 'plus' 14 %}</button>
+            <input type="number" name="qty" value="{{ it.qty }}" min="1" max="{{ it.stock }}">
+            <button type="button" data-qty="-1">{% icon 'minus' 14 %}</button>
+          </div>
+          <b>{{ it.total|price }} <small class="muted">تومان</small></b>
+          <button class="remove-btn" data-remove type="button">{% icon 'trash' 14 %} حذف</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <aside class="summary reveal">
+      <div class="card">
+        {% if site.free_shipping_over %}
+        <div class="ship-progress">
+          {% if free_remain %}فقط <b>{{ free_remain|price }} تومان</b> دیگر تا ارسال رایگان! 🚚{% else %}🎉 ارسال این سفارش رایگان است.{% endif %}
+          <div class="bar"><i data-w="{{ free_progress }}" style="width:0"></i></div>
+        </div>
+        {% endif %}
+        <div class="summary-row"><span>جمع اقلام ({{ cart_count|fa }} عدد)</span><span>{{ subtotal|price }} تومان</span></div>
+        <div class="summary-row"><span>هزینه ارسال</span><span>{% if shipping %}{{ shipping|price }} تومان{% else %}<span class="text-success">رایگان</span>{% endif %}</span></div>
+        <div class="summary-row total"><span>مبلغ قابل پرداخت</span><span>{{ total|price }} تومان</span></div>
+        <p class="muted" style="font-size:12px;margin:6px 0 16px">کد تخفیف در مرحله بعد قابل اعمال است.</p>
+        <a href="{% url 'orders:checkout' %}" class="btn btn-brand btn-lg btn-block">ادامه و ثبت پیش‌سفارش {% icon 'arrow-left' 18 %}</a>
+        <div class="pre-note">{% icon 'chat' 18 %}<span>بعد از ثبت پیش‌سفارش، پیام سفارش را برای ادمین در <b>تلگرام</b> یا <b>روبیکا</b> می‌فرستید تا پرداخت تایید شود.</span></div>
+      </div>
+    </aside>
+  </div>
+  {% else %}
+  <div class="empty card reveal" style="margin-top:20px">
+    <div class="empty-ic">{% icon 'cart' 42 %}</div>
+    <h3>سبد خرید شما خالی است</h3>
+    <p class="muted">محصولات مورد علاقه‌تان را پیدا کنید و به سبد اضافه کنید.</p>
+    <a href="{% url 'shop:list' %}" class="btn btn-brand">رفتن به فروشگاه</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

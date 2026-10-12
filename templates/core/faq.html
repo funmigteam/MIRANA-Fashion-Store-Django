@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}سوالات متداول | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:860px">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>سوالات متداول</span></nav><h1>سوالات متداول</h1></div>
+  <div class="reveal-stagger" style="margin-top:20px">
+    <details class="faq-item" open><summary>پیش‌سفارش یعنی چه؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">بعد از ثبت سفارش در سایت، سفارش شما با وضعیت «پیش‌سفارش» ثبت و موجودی برایتان رزرو می‌شود. با ارسال پیام سفارش و رسید پرداخت برای ادمین، پرداخت تایید و سفارش نهایی می‌شود.</div></details>
+    <details class="faq-item"><summary>چطور پرداخت کنم؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">پس از ثبت پیش‌سفارش، شماره کارت به شما نمایش داده می‌شود. مبلغ را واریز و رسید را برای ادمین در تلگرام (@{{ site.telegram_id }}) یا روبیکا (@{{ site.rubika_id }}) بفرستید. همچنین می‌توانید رسید را در صفحه سفارش آپلود کنید.</div></details>
+    <details class="faq-item"><summary>چقدر طول می‌کشد سفارش به دستم برسد؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">سفارش‌ها معمولاً ۱ تا ۲ روز کاری بعد از تایید پرداخت ارسال می‌شوند. زمان رسیدن پست پیشتاز بسته به شهر شما ۲ تا ۵ روز کاری است.</div></details>
+    <details class="faq-item"><summary>کد رهگیری را از کجا ببینم؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">به محض ارسال، کد رهگیری در بخش «سفارش‌های من» و صفحه «پیگیری سفارش» نمایش داده می‌شود.</div></details>
+    <details class="faq-item"><summary>هزینه ارسال چقدر است؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">هزینه ارسال {{ site.shipping_cost|price }} تومان است{% if site.free_shipping_over %} و برای سفارش‌های بالای {{ site.free_shipping_over|price }} تومان رایگان است{% endif %}.</div></details>
+    <details class="faq-item"><summary>اگر سایز مناسب نبود چه کنم؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">تا ۷ روز پس از دریافت، در صورت سالم بودن محصول و برچسب، امکان تعویض سایز وجود دارد. کافی است به ادمین پیام دهید.</div></details>
+    <details class="faq-item"><summary>می‌توانم پیش‌سفارش را لغو کنم؟ {% icon 'chevron-down' 18 %}</summary><div class="faq-body">بله، تا قبل از تایید پرداخت، از صفحه جزئیات سفارش می‌توانید آن را لغو کنید.</div></details>
+  </div>
+</div>
+{% endblock %}

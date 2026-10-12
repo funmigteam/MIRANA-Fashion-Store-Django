@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}صفحه پیدا نشد | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container empty reveal">
+  <div style="font-size:120px;font-weight:900;line-height:1;color:var(--brand-soft)">{{ "404"|fa }}</div>
+  <h1>این صفحه پیدا نشد</h1>
+  <p class="muted">شاید آدرس اشتباه است یا محصول دیگر موجود نیست.</p>
+  <a href="{% url 'shop:list' %}" class="btn btn-brand">مشاهده محصولات</a>
+</div>
+{% endblock %}

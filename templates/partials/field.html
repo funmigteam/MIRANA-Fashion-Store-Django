@@ -1,0 +1,8 @@
+{% with w=f.field.widget.input_type %}
+<div class="field {% if w == 'checkbox' %}check{% endif %} {% if f.errors %}has-error{% endif %} {% if full or f.field.widget.attrs.rows or w == 'radio' %}full{% endif %} {% if w == 'radio' %}radio-cards{% endif %}">
+  <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required and w != 'checkbox' %} <span class="text-danger">*</span>{% endif %}</label>
+  {{ f }}
+  {% if f.help_text %}<span class="help">{{ f.help_text|safe }}</span>{% endif %}
+  {% for e in f.errors %}<span class="error">{{ e }}</span>{% endfor %}
+</div>
+{% endwith %}

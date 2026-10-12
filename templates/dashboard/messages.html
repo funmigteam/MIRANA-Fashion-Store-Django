@@ -1,0 +1,23 @@
+{% extends "dashboard/base.html" %}
+{% block title %}پیام‌ها{% endblock %}
+{% block heading %}پیام‌های تماس{% endblock %}
+{% block content %}
+<div class="tabs"><a href="?" class="tab {% if not request.GET.unread %}active{% endif %}">همه</a><a href="?unread=1" class="tab {% if request.GET.unread %}active{% endif %}">خوانده‌نشده</a></div>
+<div class="grid">
+  {% for m in page.object_list %}
+  <div class="card" style="{% if not m.is_read %}border-color:var(--brand);{% endif %}">
+    <div class="card-head">
+      <h2>{% if not m.is_read %}<span class="chip warn">جدید</span>{% endif %} {{ m.name }} <small class="muted ltr">{{ m.phone }}</small></h2>
+      <small class="muted">{{ m.created_at|jdate:"datetime" }}</small>
+    </div>
+    {% if m.subject %}<b>{{ m.subject }}</b>{% endif %}
+    <p style="white-space:pre-line;margin:6px 0 14px">{{ m.message }}</p>
+    <div style="display:flex;gap:8px">
+      <form method="post" action="{% url 'dashboard:message_action' m.pk %}">{% csrf_token %}<button class="btn btn-sm btn-light" name="action" value="toggle">{% if m.is_read %}علامت خوانده‌نشده{% else %}{% icon 'check' 14 %} خوانده شد{% endif %}</button></form>
+      <form method="post" action="{% url 'dashboard:message_action' m.pk %}" data-confirm="پیام حذف می‌شود.">{% csrf_token %}<input type="hidden" name="action" value="delete"><button class="btn btn-sm btn-ghost text-danger">{% icon 'trash' 14 %} حذف</button></form>
+    </div>
+  </div>
+  {% empty %}<div class="card empty"><div class="e-ic">{% icon 'mail' 30 %}</div>پیامی وجود ندارد.</div>{% endfor %}
+</div>
+{% include "dashboard/_pagination.html" %}
+{% endblock %}

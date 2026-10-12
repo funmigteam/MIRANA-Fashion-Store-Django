@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}پیش‌سفارش ثبت شد | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:980px">
+  <div class="success-hero">
+    <svg class="check-anim" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M30 52 l14 14 l27 -30"/></svg>
+    <h1>پیش‌سفارش شما ثبت شد 🌿</h1>
+    <p class="muted">کد سفارش شما:</p>
+    <div class="order-code"><span class="ltr">{{ order.code }}</span> <button class="icon-btn" style="width:34px;height:34px" data-copy="{{ order.code }}" aria-label="کپی کد">{% icon 'copy' 16 %}</button></div>
+    <p style="margin-top:16px">برای نهایی شدن سفارش، مراحل زیر را انجام دهید.</p>
+  </div>
+
+  <div class="cart-layout" style="grid-template-columns:1fr 1fr;margin-top:20px">
+    <div class="card reveal">
+      <div class="card-title">{% icon 'card' %} ۱. پرداخت مبلغ سفارش</div>
+      <div class="pay-card">
+        <div style="display:flex;justify-content:space-between;align-items:center"><b>{{ site.site_name }}</b><span style="opacity:.7;font-size:12px">کارت به کارت</span></div>
+        <div class="num">{{ site.card_number }}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
+          <span>به نام: {{ site.card_holder }}</span>
+          <button class="btn btn-sm btn-light" data-copy="{{ site.card_number }}" data-copy-msg="شماره کارت کپی شد">{% icon 'copy' 14 %} کپی</button>
+        </div>
+      </div>
+      {% if site.sheba %}<p class="muted" style="margin-top:10px;font-size:13px">شبا: <span class="ltr">{{ site.sheba }}</span></p>{% endif %}
+      <div class="summary-row total" style="margin-top:14px"><span>مبلغ قابل پرداخت</span><span>{{ order.total|price }} تومان</span></div>
+      <button class="btn btn-sm btn-ghost" data-copy="{{ order.total }}" data-copy-msg="مبلغ کپی شد">{% icon 'copy' 14 %} کپی مبلغ</button>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-title">{% icon 'chat' %} ۲. ارسال پیام سفارش به ادمین</div>
+      <p class="muted" style="font-size:13px">متن زیر را کپی کنید و همراه با <b>تصویر رسید پرداخت</b> برای ادمین بفرستید. لینک داخل پیام، ادمین را مستقیم به سفارش شما می‌برد.</p>
+      <div class="msg-box" id="admin-msg">{{ admin_message }}</div>
+      <button class="btn btn-block btn-light" style="margin:12px 0" data-copy="#admin-msg" data-copy-msg="پیام سفارش کپی شد ✓">{% icon 'copy' 16 %} کپی پیام سفارش</button>
+      <div class="send-btns">
+        {% if site.telegram_id %}<a class="btn btn-telegram" href="{{ site.telegram_url }}" target="_blank" rel="noopener" data-copy-then-open="#admin-msg">{% icon 'telegram' 18 %} ارسال در تلگرام</a>{% endif %}
+        {% if site.rubika_id %}<a class="btn btn-rubika" href="{{ site.rubika_url }}" target="_blank" rel="noopener" data-copy-then-open="#admin-msg">{% icon 'rubika' 18 %} ارسال در روبیکا</a>{% endif %}
+      </div>
+      <div style="margin-top:12px;font-size:13px" class="muted">
+        {% if site.telegram_id %}<div>تلگرام ادمین: <a class="ltr" href="{{ site.telegram_url }}" target="_blank" rel="noopener">{{ site.telegram_url }}</a></div>{% endif %}
+        {% if site.rubika_id %}<div>روبیکا ادمین: <a class="ltr" href="{{ site.rubika_url }}" target="_blank" rel="noopener">{{ site.rubika_url }}</a></div>{% endif %}
+        <div style="margin-top:6px">لینک سفارش برای ادمین: <span class="ltr" style="word-break:break-all">{{ panel_link }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card reveal" style="margin-top:18px">
+    <div class="card-title">{% icon 'clock' %} ۳. منتظر تایید بمانید</div>
+    <div class="steps-v">
+      <div class="step-v"><div>ادمین پس از دریافت پیام و بررسی رسید، <b>پرداخت را تایید</b> می‌کند.</div></div>
+      <div class="step-v"><div>سفارش شما <b>آماده‌سازی</b> و بسته‌بندی می‌شود.</div></div>
+      <div class="step-v"><div>پس از <b>ارسال</b>، کد رهگیری پست در صفحه سفارش برای شما نمایش داده می‌شود.</div></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+      <a href="{{ order.get_absolute_url }}" class="btn">مشاهده سفارش و آپلود رسید</a>
+      <a href="{% url 'shop:list' %}" class="btn btn-light">ادامه خرید</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

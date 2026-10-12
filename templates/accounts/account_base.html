@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a><span>حساب کاربری</span></nav></div>
+  <div class="account-layout" style="margin-top:10px">
+    <aside class="card account-nav reveal">
+      <div class="who">
+        <span class="avatar">{{ user.first_name|slice:":1"|default:"م" }}</span>
+        <div><b>{{ user.get_full_name|default:user.username }}</b><br><small class="muted ltr">{{ user.username|fa }}</small></div>
+      </div>
+      {% with n=request.resolver_match.url_name %}
+      <a href="{% url 'accounts:profile' %}" class="{% if n == 'profile' %}active{% endif %}">{% icon 'user' 18 %} پروفایل و آدرس</a>
+      <a href="{% url 'orders:list' %}" class="{% if n == 'list' or n == 'detail' %}active{% endif %}">{% icon 'box' 18 %} سفارش‌های من</a>
+      <a href="{% url 'shop:wishlist' %}">{% icon 'heart' 18 %} علاقه‌مندی‌ها</a>
+      <a href="{% url 'accounts:password' %}" class="{% if n == 'password' %}active{% endif %}">{% icon 'shield' 18 %} تغییر رمز عبور</a>
+      {% if user.is_staff %}<a href="{% url 'dashboard:home' %}">{% icon 'settings' 18 %} پنل مدیریت</a>{% endif %}
+      {% endwith %}
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button type="submit" class="text-danger">{% icon 'logout' 18 %} خروج</button></form>
+    </aside>
+    <section>{% block account %}{% endblock %}</section>
+  </div>
+</div>
+{% endblock %}

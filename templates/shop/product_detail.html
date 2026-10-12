@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ product.name }} | {{ site.site_name }}{% endblock %}
+{% block description %}{{ product.short_description|default:product.name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head" style="padding-bottom:20px">
+    <nav class="breadcrumb"><a href="{% url 'core:home' %}">خانه</a>
+      {% if product.category.parent %}<a href="{{ product.category.parent.get_absolute_url }}"><span>{{ product.category.parent.name }}</span></a>{% endif %}
+      <a href="{{ product.category.get_absolute_url }}"><span>{{ product.category.name }}</span></a><span>{{ product.name }}</span></nav>
+  </div>
+
+  <div class="pd">
+    <div class="gallery reveal">
+      <div class="gallery-thumbs">
+        {% if product.image %}<button class="active" data-src="{{ product.image.url }}"><img src="{{ product.image.url }}" alt=""></button>{% endif %}
+        {% for im in product.images.all %}<button data-src="{{ im.image.url }}"><img src="{{ im.image.url }}" alt="" loading="lazy"></button>{% endfor %}
+      </div>
+      <div class="gallery-main">
+        {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}{% with product.images.all.0 as f %}<img src="{% if f %}{{ f.image.url }}{% else %}{% static 'img/placeholder.svg' %}{% endif %}" alt="{{ product.name }}">{% endwith %}{% endif %}
+        <div class="pc-tags">
+          {% if product.discount_percent %}<span class="tag tag-sale">{{ product.discount_percent|fa }}٪ تخفیف</span>{% endif %}
+          {% if product.is_new %}<span class="tag tag-new">جدید</span>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-info reveal">
+      <a href="{{ product.category.get_absolute_url }}" class="eyebrow">{{ product.category.name }}</a>
+      <h1>{{ product.name }}</h1>
+      <div class="pd-meta">
+        <span>کد: <b class="ltr">{{ product.sku }}</b></span>
+        <span>مناسب برای: {{ product.get_gender_display }}</span>
+        {% if product.sold %}<span>{{ product.sold|fa }} فروش</span>{% endif %}
+      </div>
+      {% if product.short_description %}<p class="muted">{{ product.short_description }}</p>{% endif %}
+
+      <div class="pd-price">
+        <div class="price">
+          <b data-price>{{ product.final_price|price }}</b><small>تومان</small>
+          {% if product.discount_price %}<del>{{ product.price|price }}</del><span class="off">{{ product.discount_percent|fa }}٪</span>{% endif %}
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'shop:cart_add' %}" data-ajax-cart data-need-variant="{% if product.has_variants %}1{% else %}0{% endif %}">
+        {% csrf_token %}
+        <input type="hidden" name="product" value="{{ product.pk }}">
+        <input type="hidden" name="variant" value="">
+        <input type="hidden" name="next" value="{{ request.path }}">
+
+        {% with product.colors as cols %}{% if cols %}
+        <div class="opt-group">
+          <div class="opt-label">رنگ <span data-color-label>انتخاب کنید</span></div>
+          <div class="swatches">{% for name, hex in cols %}<button type="button" class="swatch" style="background:{{ hex }}" data-color="{{ name }}" title="{{ name }}" aria-label="{{ name }}"></button>{% endfor %}</div>
+        </div>
+        {% endif %}{% endwith %}
+
+        {% with product.sizes as szs %}{% if szs %}
+        <div class="opt-group">
+          <div class="opt-label">سایز <a href="#size-guide" class="muted" style="font-size:12px" onclick="document.querySelector('[data-tab=size]').click()">راهنمای سایز</a></div>
+          <div class="sizes">{% for s in szs %}<button type="button" class="size-btn" data-size="{{ s }}">{{ s }}</button>{% endfor %}</div>
+        </div>
+        {% endif %}{% endwith %}
+
+        {% if product.in_stock %}
+        <div class="buy-row">
+          <div class="qty">
+            <button type="button" data-qty="1" aria-label="افزایش">{% icon 'plus' 16 %}</button>
+            <input type="number" name="qty" value="1" min="1" max="{% if product.has_variants %}99{% else %}{{ product.stock }}{% endif %}" aria-label="تعداد">
+            <button type="button" data-qty="-1" aria-label="کاهش">{% icon 'minus' 16 %}</button>
+          </div>
+          <button type="submit" class="btn btn-lg btn-brand">{% icon 'cart' 20 %} افزودن به سبد خرید</button>
+          <button type="button" class="icon-btn pc-wish {% if product.pk in wish_ids %}active{% endif %}" style="position:static;border:1.5px solid var(--line);width:50px;height:50px" data-wish="{% url 'shop:wishlist_toggle' product.pk %}" aria-label="علاقه‌مندی">{% icon 'heart' 20 %}</button>
+        </div>
+        <div class="stock-note" data-stock>
+          {% if product.has_variants %}<i class="dot"></i> برای مشاهده موجودی، سایز / رنگ را انتخاب کنید
+          {% elif product.stock <= 3 %}<i class="dot low"></i> فقط {{ product.stock|fa }} عدد باقی مانده
+          {% else %}<i class="dot"></i> موجود در انبار{% endif %}
+        </div>
+        {% else %}
+        <div class="pre-note"><i class="dot out" style="margin-top:8px"></i><div><b>این محصول فعلاً ناموجود است.</b><br>برای اطلاع از موجود شدن به ادمین در <a href="{{ site.telegram_url }}" target="_blank" rel="noopener" style="color:var(--brand-dark)">تلگرام</a> یا <a href="{{ site.rubika_url }}" target="_blank" rel="noopener" style="color:var(--brand-dark)">روبیکا</a> پیام دهید.</div></div>
+        {% endif %}
+      </form>
+
+      <div class="pd-perks">
+        <div>{% icon 'truck' 22 %}ارسال سریع به سراسر کشور</div>
+        <div>{% icon 'refresh' 22 %}۷ روز ضمانت تعویض سایز</div>
+        <div>{% icon 'chat' 22 %}مشاوره در تلگرام و روبیکا</div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab-nav">
+          <button class="active" type="button">توضیحات</button>
+          <button type="button">مشخصات</button>
+          <button type="button" data-tab="size" id="size-guide">راهنمای سایز</button>
+        </div>
+        <div class="tab-panel active">{{ product.description|default:"توضیحاتی ثبت نشده است." }}</div>
+        <div class="tab-panel">
+          <table class="spec-table">
+            <tr><td>دسته‌بندی</td><td>{{ product.category }}</td></tr>
+            {% if product.material %}<tr><td>جنس</td><td>{{ product.material }}</td></tr>{% endif %}
+            {% if product.sizes %}<tr><td>سایزها</td><td>{{ product.sizes|join:"، " }}</td></tr>{% endif %}
+            {% if product.colors %}<tr><td>رنگ‌ها</td><td>{% for n, h in product.colors %}{{ n }}{% if not forloop.last %}، {% endif %}{% endfor %}</td></tr>{% endif %}
+            {% if product.care %}<tr><td>نگهداری</td><td>{{ product.care }}</td></tr>{% endif %}
+            <tr><td>برند</td><td>{{ site.site_name }} ({{ site.site_name_en }})</td></tr>
+          </table>
+        </div>
+        <div class="tab-panel">
+          <table class="spec-table">
+            <tr><td><b>سایز</b></td><td><b>دور سینه (cm)</b> — <b>قد (cm)</b></td></tr>
+            <tr><td>S</td><td>{{ "96"|fa }} — {{ "68"|fa }}</td></tr>
+            <tr><td>M</td><td>{{ "102"|fa }} — {{ "70"|fa }}</td></tr>
+            <tr><td>L</td><td>{{ "108"|fa }} — {{ "72"|fa }}</td></tr>
+            <tr><td>XL</td><td>{{ "114"|fa }} — {{ "74"|fa }}</td></tr>
+          </table>
+          <p class="muted" style="margin-top:12px">برای مشاوره دقیق سایز به ادمین در تلگرام یا روبیکا پیام دهید.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <section class="section">
+    <div class="section-head reveal"><div><span class="eyebrow">YOU MAY LIKE</span><h2>محصولات مشابه</h2></div></div>
+    <div class="product-grid reveal-stagger">{% for p in related %}{% include "partials/product_card.html" %}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{{ variants|json_script:"variants-data" }}
+{% endblock %}

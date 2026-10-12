@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}ورود | {{ site.site_name }}{% endblock %}
+{% block content %}
+<div class="container auth-wrap">
+  <div class="auth reveal">
+    <div class="auth-side">
+      <div><span class="eyebrow" style="color:#e2b48f">WELCOME BACK</span><h2>دوباره خوش آمدید</h2><p class="hide-sm" style="opacity:.75">وارد حساب کاربری خود شوید تا سفارش‌ها، کد رهگیری و علاقه‌مندی‌هایتان را ببینید.</p></div>
+      <div class="hide-sm" style="display:grid;gap:10px;font-size:14px;opacity:.85">
+        <span>{% icon 'check' 16 %} پیگیری لحظه‌ای سفارش</span><span>{% icon 'check' 16 %} مشاهده کد رهگیری پستی</span><span>{% icon 'check' 16 %} ذخیره آدرس برای خرید سریع</span>
+      </div>
+      <span class="big">M</span>
+    </div>
+    <form method="post" class="auth-form" data-once>{% csrf_token %}
+      <h1>ورود به حساب</h1>
+      <p class="muted" style="font-size:14px">با شماره موبایل (یا نام کاربری مدیر) وارد شوید.</p>
+      {% if form.non_field_errors %}<div class="form-errors">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      <input type="hidden" name="next" value="{{ request.GET.next }}">
+      {% for f in form %}{% include "partials/field.html" %}{% endfor %}
+      <button class="btn btn-brand btn-lg btn-block" type="submit">ورود</button>
+      <div class="auth-switch">حساب ندارید؟ <a href="{% url 'accounts:register' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}">ثبت‌نام کنید</a></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

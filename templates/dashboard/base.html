@@ -1,0 +1,78 @@
+{% load static %}<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}پنل مدیریت{% endblock %} | {{ site.site_name }}</title>
+  <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem("mirana-panel-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body data-badges="{% url 'dashboard:badges' %}">
+{% with n=request.resolver_match.url_name %}
+<div class="layout">
+  <aside class="sidebar">
+    <a href="{% url 'dashboard:home' %}" class="side-brand"><span class="mark">م</span><div><b>{{ site.site_name }}</b><small>ADMIN PANEL</small></div></a>
+    <div class="side-label">اصلی</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:home' %}" class="side-link {% if n == 'home' %}active{% endif %}" title="داشبورد">{% icon 'chart' %}<span>داشبورد</span></a>
+      <a href="{% url 'dashboard:orders' %}" class="side-link {% if 'order' in n %}active{% endif %}" title="سفارش‌ها">{% icon 'box' %}<span>سفارش‌ها</span><em class="count" data-badge="pending" data-n="0"></em></a>
+    </nav>
+    <div class="side-label">فروشگاه</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:products' %}" class="side-link {% if 'product' in n %}active{% endif %}" title="محصولات">{% icon 'tag' %}<span>محصولات</span></a>
+      <a href="{% url 'dashboard:product_add' %}" class="side-link" title="افزودن محصول">{% icon 'plus' %}<span>افزودن محصول</span></a>
+      <a href="{% url 'dashboard:categories' %}" class="side-link {% if 'categor' in n %}active{% endif %}" title="دسته‌بندی‌ها">{% icon 'grid' %}<span>دسته‌بندی‌ها</span></a>
+      <a href="{% url 'dashboard:coupons' %}" class="side-link {% if 'coupon' in n %}active{% endif %}" title="کدهای تخفیف">{% icon 'percent' %}<span>کدهای تخفیف</span></a>
+      <a href="{% url 'dashboard:banners' %}" class="side-link {% if 'banner' in n %}active{% endif %}" title="اسلایدر">{% icon 'image' %}<span>اسلایدر صفحه اصلی</span></a>
+    </nav>
+    <div class="side-label">مدیریت</div>
+    <nav class="side-nav">
+      <a href="{% url 'dashboard:users' %}" class="side-link {% if 'user' in n %}active{% endif %}" title="کاربران">{% icon 'users' %}<span>کاربران</span></a>
+      <a href="{% url 'dashboard:messages' %}" class="side-link {% if 'message' in n %}active{% endif %}" title="پیام‌ها">{% icon 'mail' %}<span>پیام‌های تماس</span><em class="count" data-badge="messages" data-n="0"></em></a>
+      <a href="{% url 'dashboard:settings' %}" class="side-link {% if n == 'settings' %}active{% endif %}" title="تنظیمات">{% icon 'settings' %}<span>تنظیمات فروشگاه</span></a>
+      <a href="{% url 'core:home' %}" target="_blank" class="side-link" title="مشاهده سایت">{% icon 'external' %}<span>مشاهده سایت</span></a>
+    </nav>
+    <div class="side-foot">
+      <div class="side-user">
+        <span class="av">{{ user.first_name|slice:":1"|default:user.username|slice:":1"|upper }}</span>
+        <div><b>{{ user.get_full_name|default:user.username }}</b><small>{% if user.is_superuser %}مدیر کل{% else %}ادمین{% endif %}</small></div>
+        <form method="post" action="{% url 'dashboard:logout' %}">{% csrf_token %}<button title="خروج">{% icon 'logout' 18 %}</button></form>
+      </div>
+    </div>
+  </aside>
+  <div class="backdrop"></div>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" data-menu aria-label="منو">{% icon 'menu' %}</button>
+      <button class="icon-btn collapse-btn" data-collapse aria-label="جمع کردن منو">{% icon 'menu' %}</button>
+      <div><h1>{% block heading %}داشبورد{% endblock %}</h1><div class="crumb">{% block crumb %}پنل مدیریت میرانا{% endblock %}</div></div>
+      <div class="top-actions">
+        {% block top_actions %}{% endblock %}
+        <a href="{% url 'dashboard:orders' %}?status=pending" class="icon-btn hide-sm" title="پیش‌سفارش‌های جدید">{% icon 'clock' 18 %}</a>
+        <button class="icon-btn" data-theme-toggle title="حالت تیره / روشن">{% icon 'moon' 18 %}</button>
+      </div>
+    </header>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endwith %}
+
+<div class="modal" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-ic">{% icon 'trash' 28 %}</div>
+    <h3>آیا مطمئن هستید؟</h3>
+    <p class="muted" id="confirm-text"></p>
+    <div class="modal-actions"><button class="btn btn-danger" data-modal-ok>بله، انجام شود</button><button class="btn btn-light" data-modal-cancel>انصراف</button></div>
+  </div>
+</div>
+<div class="toasts"></div>
+{% for m in messages %}<span class="django-message" hidden data-type="{{ m.tags|default:'info' }}" data-text="{{ m }}"></span>{% endfor %}
+{% csrf_token %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>
